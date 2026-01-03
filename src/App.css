@@ -1,0 +1,9 @@
+@import "tailwindcss";
+@plugin './hero.ts';
+/* Note: You may need to change the path to fit your project structure */
+@source '../node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}';
+@custom-variant dark (&:is(.dark *));
+
+.funny-rotate {
+    @apply z-10 transition-all duration-300 ease-out cursor-pointer hover:-rotate-3 hover:scale-105;
+}
