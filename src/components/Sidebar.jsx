@@ -2,7 +2,7 @@ import { Button, Listbox, ListboxItem } from "@heroui/react";
 import Logo from "./Logo";
 import { cn } from "../utils/cn";
 import { CiLogout } from "react-icons/ci";
-import { useLocation } from "react-router";
+import { Link, useLocation } from "react-router";
 import { PiBank, PiGear, PiHandsPraying, PiUsers } from "react-icons/pi";
 
 const sidebarItems = [
@@ -10,25 +10,25 @@ const sidebarItems = [
     key: "participants",
     label: "Jemaat",
     href: "/",
-    icon: <PiUsers />,
+    icon: <PiUsers size={24} />,
   },
   {
     key: "wadah",
     label: "Wadah",
     href: "/wadah",
-    icon: <PiBank />,
+    icon: <PiBank size={24} />,
   },
   {
     key: "prayer-group",
     label: "Kelompok Doa",
     href: "/prayer-group",
-    icon: <PiHandsPraying />,
+    icon: <PiHandsPraying size={24} />,
   },
   {
     key: "settings",
     label: "Settings",
     href: "/settings",
-    icon: <PiGear />,
+    icon: <PiGear size={24} />,
   },
 ];
 
@@ -42,6 +42,9 @@ const Sidebar = ({ isOpen }) => {
     }
     return location.pathname.startsWith(path);
   };
+  const activeKey = sidebarItems.find((item) => {
+    return isActive(item.href);
+  })?.key;
   return (
     <div
       className={cn(
@@ -51,29 +54,49 @@ const Sidebar = ({ isOpen }) => {
     >
       <div>
         <Logo height={20}></Logo>
-        <Listbox
+        <div className="flex flex-col gap-y-4 mt-8">
+  {sidebarItems.map((item) => (
+    <Link
+      key={item.href}
+      to={item.href}
+      className={cn(
+        "h-12 px-4 rounded-lg text-sm flex gap-x-2 items-center \
+         hover:bg-emerald-300 transition-colors duration-200 ease-in-out",
+        {
+          "bg-primary text-white": isActive(item.href),
+        }
+      )}
+    >
+      {item.icon}
+      {item.label}
+    </Link>
+  ))}
+</div>
+
+        {/* <Listbox
           items={sidebarItems}
-          variant="solid"
           aria-label="Dashboard Menu"
           className="mt-8"
+          selectedKeys={activeKey ? [activeKey] : []}
+          selectionMode="single"
+          color="primary"
         >
           {(item) => (
             <ListboxItem
               key={item.key}
-              className={cn("my-1 h-12 text-2xl", {
-                "bg-primary text-white": isActive(item.href),
-              })}
+              className={cn("my-1 h-12 text-2xl", {})}
               startContent={item.icon}
               textValue={item.label}
               aria-labelledby={item.label}
               aria-describedby={item.label}
-              href={item.href}
-              // as={link}
+              to={item.href}
+              as={Link}
+              color="primary"
             >
               <p className="text-small">{item.label}</p>
             </ListboxItem>
           )}
-        </Listbox>
+        </Listbox> */}
       </div>
       <div className="flex items-center p-1">
         <Button

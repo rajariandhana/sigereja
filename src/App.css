@@ -7,3 +7,7 @@
 .funny-rotate {
     @apply z-10 transition-all duration-300 ease-out cursor-pointer hover:-rotate-3 hover:scale-105;
 }
+
+.bg-primary {
+    @apply bg-emerald-500;
+}
