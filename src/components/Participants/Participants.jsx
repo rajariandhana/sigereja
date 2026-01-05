@@ -66,7 +66,7 @@ const numberOfRows = [
   { key: "20", label: "20" },
   { key: "50", label: "50" },
   { key: "100", label: "100" },
-  { key: "all", label: "Tunjukkan Semua Baris" },
+  { key: "all", label: "Tunjukkan Semua" },
 ];
 
 export default function Participants() {
@@ -128,7 +128,9 @@ export default function Participants() {
   const [age, setAge] = useState();
   const [minAge, setMinAge] = useState();
   const [maxAge, setMaxAge] = useState();
-  const [selectedGenders, setSelectedGenders] = useState(["pria", "wanita"]);
+  const [selectedGenders, setSelectedGenders] = useState([]);
+  const [selectedMinistries, setSelectedMinistries] = useState([]);
+  const [selectedPrayerGroups, setSelectedPrayerGroups] = useState([]);
 
   useEffect(() => {
     if (!participants) return;
@@ -140,6 +142,11 @@ export default function Participants() {
 
     setFilteredItems(withAge);
   }, [participants]);
+
+  // useEffect(() => {
+  //   if (!ministries) return;
+  //   setSelectedMinistries(ministries.map((ministry) => ministry._id));
+  // }, [ministries]);
 
   useEffect(() => {
     if (!participants) return;
@@ -175,8 +182,39 @@ export default function Participants() {
       filtered = filtered.filter((p) => p.gender === selectedGender);
     }
 
+    if (
+      selectedMinistries.length > 0 &&
+      selectedMinistries.length < ministries.length
+    ) {
+      filtered = filtered.filter((p) =>
+        p.ministries.some((m) => selectedMinistries.includes(m.ministryId._id))
+      );
+    }
+
+    if (
+      selectedPrayerGroups.length > 0 &&
+      selectedPrayerGroups.length < prayerGroups.length
+    ) {
+      filtered = filtered.filter((p) =>
+        p.prayerGroups.some((m) =>
+          selectedPrayerGroups.includes(m.prayerGroupId._id)
+        )
+      );
+    }
+
     setFilteredItems(filtered);
-  }, [participants, nameFilter, age, minAge, maxAge, selectedGenders]);
+  }, [
+    participants,
+    nameFilter,
+    age,
+    minAge,
+    maxAge,
+    selectedGenders,
+    selectedMinistries,
+    ministries,
+    selectedPrayerGroups,
+    prayerGroups,
+  ]);
 
   useEffect(() => {
     if (!filteredItems) return;
@@ -299,49 +337,75 @@ export default function Participants() {
           label="Jumlah Baris / Halaman"
           selectedKeys={new Set([inputRowsPerPage])}
           onSelectionChange={(keys) => setInputRowsPerPage([...keys][0])}
+          className="w-50"
         >
           {numberOfRows.map((page) => (
             <SelectItem key={page.key}>{page.label}</SelectItem>
           ))}
         </Select>
-        <div className="w-fit">
-          <div>
-            Usia tepat
-            <NumberInput
-              className="w-20"
-              description="Usia"
-              value={age}
-              onValueChange={setAge}
-              minValue={0}
-            />
-          </div>
-          <div>
-            Jangkauan Usia
-            <div className="flex gap-x-4">
+        <div className="flex gap-x-4">
+          <div className="w-fit">
+            <div>
+              Usia tepat
               <NumberInput
                 className="w-20"
-                description="Minimum"
-                value={minAge}
-                onValueChange={setMinAge}
-                minValue={0}
-              />
-              <NumberInput
-                className="w-20"
-                description="Maksimum"
-                value={maxAge}
-                onValueChange={setMaxAge}
+                description="Usia"
+                value={age}
+                onValueChange={setAge}
                 minValue={0}
               />
             </div>
+            <div>
+              Jangkauan Usia
+              <div className="flex gap-x-4">
+                <NumberInput
+                  className="w-20"
+                  description="Minimum"
+                  value={minAge}
+                  onValueChange={setMinAge}
+                  minValue={0}
+                />
+                <NumberInput
+                  className="w-20"
+                  description="Maksimum"
+                  value={maxAge}
+                  onValueChange={setMaxAge}
+                  minValue={0}
+                />
+              </div>
+            </div>
           </div>
+          <CheckboxGroup
+            value={selectedMinistries}
+            onValueChange={setSelectedMinistries}
+          >
+            Wadah
+            {ministries.map((ministry) => (
+              <Checkbox value={ministry._id}>
+                {renderColorChip(ministries, ministry._id)}
+              </Checkbox>
+            ))}
+          </CheckboxGroup>
+          <CheckboxGroup
+            value={selectedPrayerGroups}
+            onValueChange={setSelectedPrayerGroups}
+          >
+            Kelompok Doa
+            {prayerGroups.map((prayerGroup) => (
+              <Checkbox value={prayerGroup._id}>
+                {renderColorChip(prayerGroups, prayerGroup._id)}
+              </Checkbox>
+            ))}
+          </CheckboxGroup>
+          <CheckboxGroup
+            value={selectedGenders}
+            onValueChange={setSelectedGenders}
+          >
+            Gender
+            <Checkbox value="pria">{renderGender("pria")}</Checkbox>
+            <Checkbox value="wanita">{renderGender("wanita")}</Checkbox>
+          </CheckboxGroup>
         </div>
-        <CheckboxGroup
-          value={selectedGenders}
-          onValueChange={setSelectedGenders}
-        >
-          <Checkbox value="pria">{renderGender("pria")}</Checkbox>
-          <Checkbox value="wanita">{renderGender("wanita")}</Checkbox>
-        </CheckboxGroup>
         <Pagination
           isCompact
           showControls
