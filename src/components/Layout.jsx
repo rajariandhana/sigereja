@@ -26,7 +26,7 @@ const Layout = () => {
             />
           </Navbar>
           {/* <p className="mb-4 text-small">description</p> */}
-          <main className="flex flex-col gap-y-2 w-fit">
+          <main className="flex flex-col gap-y-2 w-full">
             <Outlet/>
           </main>
         </div>
