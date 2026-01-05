@@ -15,15 +15,27 @@ import {
   User,
   Select,
   SelectItem,
+  Dropdown,
+  DropdownTrigger,
+  DropdownMenu,
+  DropdownItem,
+  NumberInput,
 } from "@heroui/react";
 import { useEffect, useState } from "react";
 import { SearchIcon } from "./example";
+import { calculateAge } from "../../utils/util";
+import { IoMdInformationCircleOutline } from "react-icons/io";
 
 const columns = [
   {
     key: "name",
-    label: "Nama",
+    label: "Nama Jemaat",
     width: 40,
+  },
+  {
+    key: "age",
+    label: "Usia",
+    width: 10,
   },
   {
     key: "ministries",
@@ -106,22 +118,53 @@ export default function Participants() {
   const [pages, setPages] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(20);
   const [inputRowsPerPage, setInputRowsPerPage] = useState("20");
+  const [age, setAge] = useState();
+  const [minAge, setMinAge] = useState();
+  const [maxAge, setMaxAge] = useState();
 
   useEffect(() => {
     if (!participants) return;
-    setFilteredItems(participants);
+
+    const withAge = participants.map((participant) => ({
+      ...participant,
+      age: calculateAge(participant.birth_date),
+    }));
+
+    setFilteredItems(withAge);
   }, [participants]);
+
   useEffect(() => {
     if (!participants) return;
-    if (!nameFilter) {
-      setFilteredItems(participants);
-      return;
+
+    let filtered = participants.map((participant) => ({
+      ...participant,
+      age: calculateAge(participant.birth_date),
+    }));
+
+    // Name filter
+    if (nameFilter) {
+      filtered = filtered.filter((p) =>
+        p.name.toLowerCase().includes(nameFilter.toLowerCase())
+      );
     }
-    const filtered = participants.filter((participant) =>
-      participant.name.toLowerCase().includes(nameFilter.toLowerCase())
-    );
+
+    // Exact age filter (takes priority)
+    if (age !== undefined && age !== null) {
+      filtered = filtered.filter((p) => p.age === age);
+    }
+    // Age range filter
+    else {
+      if (minAge !== undefined && minAge !== null) {
+        filtered = filtered.filter((p) => p.age >= minAge);
+      }
+      if (maxAge !== undefined && maxAge !== null) {
+        filtered = filtered.filter((p) => p.age <= maxAge);
+      }
+    }
+
     setFilteredItems(filtered);
-  }, [nameFilter, participants]);
+  }, [participants, nameFilter, age, minAge, maxAge]);
+
   useEffect(() => {
     if (!filteredItems) return;
     setPage(1);
@@ -162,6 +205,9 @@ export default function Participants() {
     switch (columnKey) {
       case "name":
         return participant.name;
+      case "age": {
+        return participant.age;
+      }
       case "ministries":
         return renderColorChips(
           participant.ministries,
@@ -173,6 +219,12 @@ export default function Participants() {
           participant.prayerGroups,
           prayerGroups,
           "prayer-groups"
+        );
+      case "view":
+        return (
+          <Link href={`/participants/${participant._id}`}>
+            <IoMdInformationCircleOutline />
+          </Link>
         );
       default:
         return JSON.stringify(columnKey);
@@ -188,6 +240,17 @@ export default function Participants() {
       if (!isNaN(n) && n > 0) setRowsPerPage(n);
     }
   }, [inputRowsPerPage, filteredItems]);
+  useEffect(() => {
+    if (age !== undefined && age !== null) {
+      setMinAge(undefined);
+      setMaxAge(undefined);
+    }
+  }, [age]);
+  useEffect(() => {
+    if (minAge !== undefined || maxAge !== undefined) {
+      setAge(undefined);
+    }
+  }, [minAge, maxAge]);
 
   if (!ministries || !prayerGroups) {
     return <Spinner />;
@@ -196,7 +259,7 @@ export default function Participants() {
   return (
     <div className="w-3/4">
       {/* <Button onPress={refetch} color="primary">Refetch</Button> */}
-      <div className="flex flex-col w-full justify-between gap-4">
+      <div className="flex flex-col w-full justify-between gap-4 mb-6">
         <Input
           isClearable
           className="w-fit"
@@ -207,7 +270,7 @@ export default function Participants() {
           onValueChange={setNameFilter}
         />
         <Select
-          label="Jumlah Baris"
+          label="Jumlah Baris / Halaman"
           selectedKeys={new Set([inputRowsPerPage])}
           onSelectionChange={(keys) => setInputRowsPerPage([...keys][0])}
         >
@@ -215,6 +278,37 @@ export default function Participants() {
             <SelectItem key={page.key}>{page.label}</SelectItem>
           ))}
         </Select>
+        <div className="w-fit">
+          <div>
+            Usia tepat
+            <NumberInput
+              className="w-20"
+              description="Usia"
+              value={age}
+              onValueChange={setAge}
+              minValue={0}
+            />
+          </div>
+          <div>
+            Jangkauan Usia
+            <div className="flex gap-x-4">
+              <NumberInput
+                className="w-20"
+                description="Minimum"
+                value={minAge}
+                onValueChange={setMinAge}
+                minValue={0}
+              />
+              <NumberInput
+                className="w-20"
+                description="Maksimum"
+                value={maxAge}
+                onValueChange={setMaxAge}
+                minValue={0}
+              />
+            </div>
+          </div>
+        </div>
         <Pagination
           isCompact
           showControls
@@ -229,13 +323,17 @@ export default function Participants() {
         // className="w-full"
         isStriped
         isHeaderSticky
-        topContent={<></>}
+        topContent={
+          <>
+            Menampilkan {shownItems.length} / {filteredItems.length}
+          </>
+        }
       >
         <TableHeader columns={columns}>
           {(column) => (
             <TableColumn
               key={column.key}
-              align={column.key === "view" ? "center" : "start"}
+              align={["age", "view"].includes(column.key) ? "center" : "start"}
               allowsSorting={column.sortable}
               width={column.width}
               minWidth={column.width}
