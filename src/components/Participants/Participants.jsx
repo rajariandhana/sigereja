@@ -13,6 +13,8 @@ import {
   Input,
   Pagination,
   User,
+  Select,
+  SelectItem,
 } from "@heroui/react";
 import { useEffect, useState } from "react";
 import { SearchIcon } from "./example";
@@ -21,23 +23,31 @@ const columns = [
   {
     key: "name",
     label: "Nama",
-    sortable: true,
+    width: 40,
   },
   {
     key: "ministries",
     label: "Wadah",
-    sortable: true,
+    width: 40,
   },
   {
     key: "prayer-groups",
     label: "Kelompok Doa",
-    sortable: true,
+    width: 40,
   },
   {
     key: "view",
     label: "VIEW",
-    sortable: false,
+    width: 10,
   },
+];
+
+const numberOfRows = [
+  { key: "10", label: "10" },
+  { key: "20", label: "20" },
+  { key: "50", label: "50" },
+  { key: "100", label: "100" },
+  { key: "all", label: "Tunjukkan Semua Baris" },
 ];
 
 export default function Participants() {
@@ -51,7 +61,11 @@ export default function Participants() {
       console.log("Participants fetch attempt finished.");
     }
   };
-  const { data: participants, isPending, refetch } = useQuery({
+  const {
+    data: participants,
+    isPending,
+    refetch,
+  } = useQuery({
     queryKey: ["participants"],
     queryFn: fetchParticipants,
   });
@@ -90,7 +104,8 @@ export default function Participants() {
   const [nameFilter, setNameFilter] = useState("");
   const [page, setPage] = useState(1);
   const [pages, setPages] = useState(1);
-  const rowsPerPage = 20;
+  const [rowsPerPage, setRowsPerPage] = useState(20);
+  const [inputRowsPerPage, setInputRowsPerPage] = useState("20");
 
   useEffect(() => {
     if (!participants) return;
@@ -113,79 +128,108 @@ export default function Participants() {
     const nPages = Math.ceil(filteredItems.length / rowsPerPage);
     console.log("nPages", nPages);
     setPages(nPages);
-  }, [filteredItems]);
+  }, [filteredItems, rowsPerPage]);
   useEffect(() => {
     const start = (page - 1) * rowsPerPage;
     const end = start + rowsPerPage;
     setShownItems(filteredItems.slice(start, end));
-  }, [page, filteredItems]);
+  }, [page, filteredItems, rowsPerPage]);
 
   const renderColorChip = (mapping, id) => {
-    const {name,color} = mapping.find(m => m._id === id);
+    const { name, color } = mapping.find((m) => m._id === id);
     return (
-      <span className={`bg-${color}-100 text-${color}-500 text-xs rounded-full px-2 py-1`}>
+      <span
+        className={`bg-${color}-100 text-${color}-500 text-xs rounded-full px-2 py-1`}
+      >
         {name}
       </span>
-    )
-  }
+    );
+  };
   const renderColorChips = (ls, mapping, type) => {
     return (
-      <span className="flex flex-wrap gap-x-2">
-        {ls.map(l => (
-          renderColorChip(mapping, type === "ministries" ? l.ministryId._id : l.prayerGroupId._id)
-        ))}
+      <span className="flex flex-wrap gap-2">
+        {ls.map((l) =>
+          renderColorChip(
+            mapping,
+            type === "ministries" ? l.ministryId._id : l.prayerGroupId._id
+          )
+        )}
       </span>
-    )
-  }
+    );
+  };
   const renderCell = (participant, columnKey) => {
     // const cellValue = participant[columnKey];
     switch (columnKey) {
       case "name":
-        return (participant.name)
+        return participant.name;
       case "ministries":
-        return renderColorChips(participant.ministries, ministries, "ministries")
+        return renderColorChips(
+          participant.ministries,
+          ministries,
+          "ministries"
+        );
       case "prayer-groups":
-        return renderColorChips(participant.prayerGroups, prayerGroups, "prayer-groups")
+        return renderColorChips(
+          participant.prayerGroups,
+          prayerGroups,
+          "prayer-groups"
+        );
       default:
         return JSON.stringify(columnKey);
     }
   };
 
+  useEffect(() => {
+    if (!inputRowsPerPage) return;
+    if (inputRowsPerPage === "all") {
+      setRowsPerPage(filteredItems?.length || Infinity); // show all
+    } else {
+      const n = parseInt(inputRowsPerPage, 10);
+      if (!isNaN(n) && n > 0) setRowsPerPage(n);
+    }
+  }, [inputRowsPerPage, filteredItems]);
+
   if (!ministries || !prayerGroups) {
-    return <Spinner/>;
+    return <Spinner />;
   }
 
   return (
     <div className="w-3/4">
       {/* <Button onPress={refetch} color="primary">Refetch</Button> */}
-      <Input
-        isClearable
-        className="w-fit"
-        placeholder="Search by name..."
-        startContent={<SearchIcon />}
-        value={nameFilter}
-        onClear={() => setNameFilter("")}
-        onValueChange={setNameFilter}
-      />
-      {/* {ministries && JSON.stringify(ministries)} */}
-      {/* {prayerGroups && JSON.stringify(prayerGroups)} */}
+      <div className="flex flex-col w-full justify-between gap-4">
+        <Input
+          isClearable
+          className="w-fit"
+          placeholder="Cari berdasarkan nama"
+          startContent={<SearchIcon />}
+          value={nameFilter}
+          onClear={() => setNameFilter("")}
+          onValueChange={setNameFilter}
+        />
+        <Select
+          label="Jumlah Baris"
+          selectedKeys={new Set([inputRowsPerPage])}
+          onSelectionChange={(keys) => setInputRowsPerPage([...keys][0])}
+        >
+          {numberOfRows.map((page) => (
+            <SelectItem key={page.key}>{page.label}</SelectItem>
+          ))}
+        </Select>
+        <Pagination
+          isCompact
+          showControls
+          showShadow
+          page={page}
+          total={pages}
+          onChange={(page) => setPage(page)}
+        />
+      </div>
       <Table
         // fullWidth={true}
-        className="w-full"
+        // className="w-full"
         isStriped
         isHeaderSticky
-        bottomContent={
-          <div className="flex w-full justify-center">
-            <Pagination
-              isCompact
-              showControls
-              showShadow
-              page={page}
-              total={pages}
-              onChange={(page) => setPage(page)}
-            />
-          </div>
-        }
+        topContent={<></>}
       >
         <TableHeader columns={columns}>
           {(column) => (
@@ -193,6 +237,9 @@ export default function Participants() {
               key={column.key}
               align={column.key === "view" ? "center" : "start"}
               allowsSorting={column.sortable}
+              width={column.width}
+              minWidth={column.width}
+              maxWidth={column.width}
             >
               {column.label}
             </TableColumn>
