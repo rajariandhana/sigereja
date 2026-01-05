@@ -55,23 +55,23 @@ const Sidebar = ({ isOpen }) => {
       <div>
         <Logo height={20}></Logo>
         <div className="flex flex-col gap-y-4 mt-8">
-  {sidebarItems.map((item) => (
-    <Link
-      key={item.href}
-      to={item.href}
-      className={cn(
-        "h-12 px-4 rounded-lg text-sm flex gap-x-2 items-center \
+          {sidebarItems.map((item) => (
+            <Link
+              key={item.href}
+              to={item.href}
+              className={cn(
+                "h-12 px-4 rounded-lg text-sm flex gap-x-2 items-center \
          hover:bg-emerald-300 transition-colors duration-200 ease-in-out",
-        {
-          "bg-primary text-white": isActive(item.href),
-        }
-      )}
-    >
-      {item.icon}
-      {item.label}
-    </Link>
-  ))}
-</div>
+                {
+                  "bg-primary text-white": isActive(item.href),
+                }
+              )}
+            >
+              {item.icon}
+              {item.label}
+            </Link>
+          ))}
+        </div>
 
         {/* <Listbox
           items={sidebarItems}
@@ -98,7 +98,7 @@ const Sidebar = ({ isOpen }) => {
           )}
         </Listbox> */}
       </div>
-      <div className="flex items-center p-1">
+      {/* <div className="flex items-center p-1">
         <Button
           color="danger"
           fullWidth
@@ -109,7 +109,7 @@ const Sidebar = ({ isOpen }) => {
           <CiLogout />
           Logout
         </Button>
-      </div>
+      </div> */}
     </div>
   );
 };

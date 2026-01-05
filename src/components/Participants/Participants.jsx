@@ -20,6 +20,8 @@ import {
   DropdownMenu,
   DropdownItem,
   NumberInput,
+  CheckboxGroup,
+  Checkbox,
 } from "@heroui/react";
 import { useEffect, useState } from "react";
 import { SearchIcon } from "./example";
@@ -46,6 +48,11 @@ const columns = [
     key: "prayer-groups",
     label: "Kelompok Doa",
     width: 40,
+  },
+  {
+    key: "gender",
+    label: "Jenis Kelamin",
+    width: 10,
   },
   {
     key: "view",
@@ -121,6 +128,7 @@ export default function Participants() {
   const [age, setAge] = useState();
   const [minAge, setMinAge] = useState();
   const [maxAge, setMaxAge] = useState();
+  const [selectedGenders, setSelectedGenders] = useState(["pria", "wanita"]);
 
   useEffect(() => {
     if (!participants) return;
@@ -162,8 +170,13 @@ export default function Participants() {
       }
     }
 
+    if (selectedGenders.length === 1) {
+      const selectedGender = selectedGenders[0];
+      filtered = filtered.filter((p) => p.gender === selectedGender);
+    }
+
     setFilteredItems(filtered);
-  }, [participants, nameFilter, age, minAge, maxAge]);
+  }, [participants, nameFilter, age, minAge, maxAge, selectedGenders]);
 
   useEffect(() => {
     if (!filteredItems) return;
@@ -200,6 +213,17 @@ export default function Participants() {
       </span>
     );
   };
+
+  const renderGender = (gender) => {
+    const color = gender === "pria" ? "blue" : "pink";
+    return (
+      <span
+        className={`bg-${color}-100 text-${color}-500 text-xs rounded-full px-2 py-1`}
+      >
+        {gender}
+      </span>
+    );
+  };
   const renderCell = (participant, columnKey) => {
     // const cellValue = participant[columnKey];
     switch (columnKey) {
@@ -220,6 +244,8 @@ export default function Participants() {
           prayerGroups,
           "prayer-groups"
         );
+      case "gender":
+        return renderGender(participant.gender);
       case "view":
         return (
           <Link href={`/participants/${participant._id}`}>
@@ -309,6 +335,13 @@ export default function Participants() {
             </div>
           </div>
         </div>
+        <CheckboxGroup
+          value={selectedGenders}
+          onValueChange={setSelectedGenders}
+        >
+          <Checkbox value="pria">{renderGender("pria")}</Checkbox>
+          <Checkbox value="wanita">{renderGender("wanita")}</Checkbox>
+        </CheckboxGroup>
         <Pagination
           isCompact
           showControls
@@ -333,7 +366,11 @@ export default function Participants() {
           {(column) => (
             <TableColumn
               key={column.key}
-              align={["age", "view"].includes(column.key) ? "center" : "start"}
+              align={
+                ["age", "gender", "view"].includes(column.key)
+                  ? "center"
+                  : "start"
+              }
               allowsSorting={column.sortable}
               width={column.width}
               minWidth={column.width}
