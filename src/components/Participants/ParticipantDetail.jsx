@@ -1,4 +1,4 @@
-import { useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import instance from "../../libs/axios/instance";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -7,11 +7,18 @@ import {
   Button,
   Checkbox,
   CheckboxGroup,
+  Code,
   DatePicker,
   Input,
   Link,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
   Spinner,
   Textarea,
+  useDisclosure,
 } from "@heroui/react";
 import { parseDate } from "@internationalized/date";
 import { MdKeyboardDoubleArrowLeft } from "react-icons/md";
@@ -19,6 +26,8 @@ import { ParticipantContext } from "../../utils/context";
 import PersonalData from "./PersonalData";
 import MultiSelect from "../MultiSelect";
 import { formatToYMD } from "../../utils/util";
+import { IoHammerOutline } from "react-icons/io5";
+import { HiOutlineTrash } from "react-icons/hi";
 
 export default function ParticipantDetail() {
   // console.log("HERE ParticipantDetail");
@@ -121,8 +130,37 @@ export default function ParticipantDetail() {
     onError: () => {
       setBack();
       addToast({
-        title: "Terjadi kesalahan!",
+        title: "Error!",
+        description: "Terjadi kesalahan saat menyimpan data jemaat",
+        color: "danger",
+      });
+    },
+  });
+
+  const navigate = useNavigate();
+
+  const { isOpen, onOpen, onOpenChange } = useDisclosure();
+  const deleteMutation = useMutation({
+    mutationFn: async () => {
+      const response = await instance.delete(
+        `/participants/${participant._id}`
+      );
+      return response.data.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["participants"] });
+      navigate("/");
+      addToast({
+        title: "Jemaat berhasil dihapus!",
         // description: ""
+        color: "success",
+      });
+    },
+    onError: () => {
+      setBack();
+      addToast({
+        title: "Error!",
+        description: "Terjadi kesalahan ketika menghapus data jemaat!",
         color: "danger",
       });
     },
@@ -226,12 +264,33 @@ export default function ParticipantDetail() {
         >
           {updateMutation.isUpdating ? (
             <>
-              {" "}
               <Spinner />
               "Menyimpan..."
             </>
           ) : (
-            "Simpan Semua Perubahan"
+            <>
+              <IoHammerOutline size={20} />
+              Simpan Semua Perubahan
+            </>
+          )}
+        </Button>
+        <Button
+          color="danger"
+          variant="ghost"
+          onPress={onOpen}
+          isLoading={deleteMutation.isUpdating}
+          isDisabled={deleteMutation.isUpdating}
+        >
+          {deleteMutation.isUpdating ? (
+            <>
+              <Spinner color="danger" />
+              "Menghapus..."
+            </>
+          ) : (
+            <>
+              <HiOutlineTrash size={20} />
+              Hapus Jemaat
+            </>
           )}
         </Button>
       </div>
@@ -239,6 +298,48 @@ export default function ParticipantDetail() {
         {JSON.stringify(selectedMinistries)}
         {JSON.stringify(selectedPrayerGroups)}
       </div> */}
+      <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader>Konfirmasi Penghapusan</ModalHeader>
+              <ModalBody>
+                <p>
+                  Anda akan menghapus data jemaat: 
+                </p>
+                <Code>{participant.name}</Code>
+                <p>
+                  Data yang dihapus tidak akan bisa dikembalikan. Apakah anda yakin?
+                </p>
+              </ModalBody>
+              <ModalFooter className="justify-between">
+                <Button variant="shadow" onPress={onClose}>
+                  Kembali
+                </Button>
+                <Button
+                  color="danger"
+                  variant="ghost"
+                  onPress={deleteMutation.mutate}
+                  isLoading={deleteMutation.isUpdating}
+                  isDisabled={deleteMutation.isUpdating}
+                >
+                  {deleteMutation.isUpdating ? (
+                    <>
+                      <Spinner color="danger" />
+                      "Menghapus..."
+                    </>
+                  ) : (
+                    <>
+                      <HiOutlineTrash size={20} />
+                      Hapus Jemaat
+                    </>
+                  )}
+                </Button>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
     </ParticipantContext.Provider>
   );
 }
