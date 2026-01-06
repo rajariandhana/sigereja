@@ -15,6 +15,16 @@ export function calculateAge(birthDateString) {
   return age;
 }
 
+export function formatToYMD(dateValue) {
+  const { year, month, day } = dateValue;
+
+  const mm = String(month).padStart(2, "0");
+  const dd = String(day).padStart(2, "0");
+
+  return `${year}-${mm}-${dd}`;
+}
+
+
 export const genders = [
   {key:"pria", label: "Pria"},
   {key:"wanita", label: "Wanita"},

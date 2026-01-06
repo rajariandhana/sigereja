@@ -1,10 +1,11 @@
 import { Select, SelectItem } from "@heroui/react";
-import { renderColorChip } from "./Commons";
+import { change, renderColorChip } from "./Commons";
 
 export default function MultiSelect({
   label,
   type,
   options,
+  old,
   selecteds,
   setSelecteds,
 }) {
@@ -38,6 +39,8 @@ export default function MultiSelect({
           {items.map((item) => renderColorChip(options, item.key))}
         </div>
       )}
+      variant="faded"
+      description={change(old, selecteds)}
     >
       {(option) => (
         <SelectItem key={option._id} textValue={option.label}>

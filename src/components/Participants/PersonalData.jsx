@@ -1,18 +1,21 @@
 import { useContext } from "react";
 import { ParticipantContext } from "../../utils/context";
-import { renderGender } from "../Commons";
+import { change, renderGender } from "../Commons";
 import {
   Button,
   DatePicker,
   Input,
   Select,
   SelectItem,
+  Spinner,
   Textarea,
 } from "@heroui/react";
 import { calculateAge, genders } from "../../utils/util";
+import { parseDate } from "@internationalized/date";
 
 export default function PersonalData() {
   const {
+    participant,
     name,
     setName,
     address,
@@ -25,30 +28,63 @@ export default function PersonalData() {
     setPhone,
     gender,
     setGender,
+    notes,
+    setNotes,
+    baptized,
+    setBaptized,
+    updatePersonalData,
+    isUpdating,
   } = useContext(ParticipantContext);
 
   return (
     <div className="flex flex-col w-3/4 mb-12 gap-4">
       <h2 className="text-lg">Data Pribadi</h2>
-      <div className="grid grid-cols-2 gap-4">
-        <Input label="Nama" value={name} onValueChange={setName} />
+      <div className="grid grid-cols-2 gap-4 mb-8">
+        <Input
+          label="Nama"
+          value={name}
+          onValueChange={setName}
+          variant="faded"
+          description={change(participant.name, name)}
+        />
         <div className="flex gap-4">
           <Input
             label="Tempat Lahir"
             value={birth_place}
             onValueChange={setBirth_place}
+            variant="faded"
+            description={change(participant.birth_place, birth_place)}
           />
           <DatePicker
             label="Tanggal Lahir"
             value={birth_date}
             onChange={setBirth_date}
-            description={`Usia: ${calculateAge(birth_date)} tahun`}
             showMonthAndYearPickers
+            selectorButtonPlacement="start"
+            endContent={
+              <span className="w-full text-black items-end">
+                {calculateAge(birth_date)} tahun
+              </span>
+            }
+            variant="faded"
+            description={change(participant.birth_date, birth_date)}
           />
         </div>
-        <Textarea label="Alamat" value={address} onValueChange={setAddress} />
+        <Textarea
+          label="Alamat"
+          value={address}
+          onValueChange={setAddress}
+          variant="faded"
+          description={change(participant.address, address)}
+        />
         <div className="flex gap-4">
-          <Input label="Nomor Telepon" value={phone} onValueChange={setPhone} />
+          <Input
+            label="Nomor Telepon"
+            value={phone}
+            onValueChange={setPhone}
+            variant="faded"
+            description={change(participant.phone, phone)}
+          />
           <Select
             label="Jenis Kelamin"
             selectionMode="single"
@@ -60,13 +96,33 @@ export default function PersonalData() {
                 <span key={item.key}>{renderGender(item.data.key)}</span>
               ));
             }}
+            variant="faded"
+            description={change(participant.gender, gender)}
           >
             {(g) => <SelectItem key={g.key}>{renderGender(g.key)}</SelectItem>}
           </Select>
         </div>
       </div>
-      <div className="flex w-full justify-end mt-4">
-        <Button color="primary" variant="ghost">Simpan Perubahan Data Pribadi</Button>
+      <div className="grid grid-cols-2 gap-4">
+        <Textarea
+          label="Catatan Tambahan"
+          value={notes}
+          onValueChange={setNotes}
+          variant="faded"
+          description={change(participant.notes, notes)}
+        />
+        <Select
+          label="Status Baptis"
+          selectionMode="single"
+          selectedKeys={[baptized]}
+          onChange={(e) => setBaptized(e.target.value)}
+          variant="faded"
+          description={change(participant.baptized, baptized)}
+          className="w-1/2"
+        >
+          <SelectItem key={"yes"}>Sudah</SelectItem>
+          <SelectItem key={"no"}>Belum</SelectItem>
+        </Select>
       </div>
     </div>
   );

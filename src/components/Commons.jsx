@@ -2,7 +2,7 @@ export function renderGender(gender) {
   const color = gender === "pria" ? "blue" : "pink";
   return (
     <span
-      className={`bg-${color}-100 text-${color}-500 text-xs rounded-full px-2 py-1 w-fit`}
+      className={`bg-${color}-100 text-${color}-500 text-sm rounded-full px-2 py-1 w-fit`}
     >
       {gender}
     </span>
@@ -13,7 +13,7 @@ export const renderColorChip = (mapping, id) => {
   const { name, color } = mapping.find((m) => m._id === id);
   return (
     <span
-      className={`bg-${color}-100 text-${color}-500 text-xs rounded-full px-2 py-1`}
+      className={`bg-${color}-100 text-${color}-500 text-sm rounded-full px-2 py-1`}
     >
       {name}
     </span>
@@ -31,3 +31,10 @@ export const renderColorChips = (ls, mapping, type) => {
     </span>
   );
 };
+
+export const change = (a, b) => {
+  if (a!=b) {
+    // console.log(a,b);
+    return <span className="text-warning">Terdeteksi perubahan!</span>
+  }
+}
