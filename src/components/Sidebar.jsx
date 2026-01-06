@@ -24,12 +24,12 @@ const sidebarItems = [
     href: "/prayer-group",
     icon: <PiHandsPraying size={24} />,
   },
-  {
-    key: "settings",
-    label: "Settings",
-    href: "/settings",
-    icon: <PiGear size={24} />,
-  },
+  // {
+  //   key: "settings",
+  //   label: "Settings",
+  //   href: "/settings",
+  //   icon: <PiGear size={24} />,
+  // },
 ];
 
 const Sidebar = ({ isOpen }) => {

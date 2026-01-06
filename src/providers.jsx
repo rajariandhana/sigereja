@@ -13,7 +13,7 @@ const queryClient = new QueryClient({
 
 export function Providers({children}) {
   return (
-    <HeroUIProvider>
+    <HeroUIProvider locale='id-ID'>
       <ToastProvider/>
         <QueryClientProvider client={queryClient}>
           {children}

@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import instance from "../../libs/axios/instance";
 import {
   Spinner,
@@ -25,8 +25,9 @@ import {
 } from "@heroui/react";
 import { useEffect, useState } from "react";
 import { SearchIcon } from "./example";
-import { calculateAge } from "../../utils/util";
+import { renderColorChip, renderColorChips, renderGender } from "../Commons";
 import { IoMdInformationCircleOutline } from "react-icons/io";
+import { calculateAge } from "../../utils/util";
 
 const columns = [
   {
@@ -56,7 +57,7 @@ const columns = [
   },
   {
     key: "view",
-    label: "VIEW",
+    label: "Lihat",
     width: 10,
   },
 ];
@@ -70,6 +71,7 @@ const numberOfRows = [
 ];
 
 export default function Participants() {
+  const queryClient = useQueryClient();
   const fetchParticipants = async () => {
     try {
       const response = await instance.get(`/participants`);
@@ -87,6 +89,12 @@ export default function Participants() {
   } = useQuery({
     queryKey: ["participants"],
     queryFn: fetchParticipants,
+    select: (participants) => {
+      participants.forEach((p) =>
+        queryClient.setQueryData(["participants", p.id], p)
+      );
+      return participants;
+    },
   });
 
   const fetchMinistries = async () => {
@@ -229,39 +237,7 @@ export default function Participants() {
     setShownItems(filteredItems.slice(start, end));
   }, [page, filteredItems, rowsPerPage]);
 
-  const renderColorChip = (mapping, id) => {
-    const { name, color } = mapping.find((m) => m._id === id);
-    return (
-      <span
-        className={`bg-${color}-100 text-${color}-500 text-xs rounded-full px-2 py-1`}
-      >
-        {name}
-      </span>
-    );
-  };
-  const renderColorChips = (ls, mapping, type) => {
-    return (
-      <span className="flex flex-wrap gap-2">
-        {ls.map((l) =>
-          renderColorChip(
-            mapping,
-            type === "ministries" ? l.ministryId._id : l.prayerGroupId._id
-          )
-        )}
-      </span>
-    );
-  };
 
-  const renderGender = (gender) => {
-    const color = gender === "pria" ? "blue" : "pink";
-    return (
-      <span
-        className={`bg-${color}-100 text-${color}-500 text-xs rounded-full px-2 py-1`}
-      >
-        {gender}
-      </span>
-    );
-  };
   const renderCell = (participant, columnKey) => {
     // const cellValue = participant[columnKey];
     switch (columnKey) {

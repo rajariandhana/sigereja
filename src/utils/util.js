@@ -14,3 +14,8 @@ export function calculateAge(birthDateString) {
   
   return age;
 }
+
+export const genders = [
+  {key:"pria", label: "Pria"},
+  {key:"wanita", label: "Wanita"},
+];
