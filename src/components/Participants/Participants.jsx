@@ -1,5 +1,3 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import instance from "../../libs/axios/instance";
 import {
   Spinner,
   Table,
@@ -25,10 +23,15 @@ import {
 } from "@heroui/react";
 import { useEffect, useState } from "react";
 import { SearchIcon } from "./example";
-import { renderColorChip, renderColorChips, renderGender } from "../Commons";
+import { renderColorChips, renderGender } from "../Commons";
 import { IoMdInformationCircleOutline } from "react-icons/io";
 import { calculateAge, genders } from "../../utils/util";
 import GroupSelect from "../GroupSelect";
+import {
+  useMinistries,
+  useParticipants,
+  usePrayerGroups,
+} from "../../hooks/hooks";
 
 const columns = [
   {
@@ -72,60 +75,10 @@ const numberOfRows = [
 ];
 
 export default function Participants() {
-  const queryClient = useQueryClient();
-  const fetchParticipants = async () => {
-    try {
-      const response = await instance.get(`/participants`);
-      return response.data.data;
-    } catch (error) {
-      console.error("Error fetching participants:", error);
-    } finally {
-      console.log("Participants fetch attempt finished.");
-    }
-  };
-  const {
-    data: participants,
-    isPending,
-    refetch,
-  } = useQuery({
-    queryKey: ["participants"],
-    queryFn: fetchParticipants,
-    select: (participants) => {
-      participants.forEach((p) =>
-        queryClient.setQueryData(["participants", p.id], p)
-      );
-      return participants;
-    },
-  });
-
-  const fetchMinistries = async () => {
-    try {
-      const response = await instance.get(`/ministries`);
-      return response.data.data;
-    } catch (error) {
-      console.error("Error fetching Ministries:", error);
-    } finally {
-      console.log("Ministries fetch attempt finished.");
-    }
-  };
-  const { data: ministries, isPending: isPendingMinistries } = useQuery({
-    queryKey: ["ministries"],
-    queryFn: fetchMinistries,
-  });
-  const fetchPrayerGroups = async () => {
-    try {
-      const response = await instance.get(`/prayer-groups`);
-      return response.data.data;
-    } catch (error) {
-      console.error("Error fetching PrayerGroups:", error);
-    } finally {
-      console.log("PrayerGroups fetch attempt finished.");
-    }
-  };
-  const { data: prayerGroups, isPending: isPendingPrayerGroups } = useQuery({
-    queryKey: ["prayer-groups"],
-    queryFn: fetchPrayerGroups,
-  });
+  const { data: participants, isPending, refetch } = useParticipants();
+  const { data: ministries, isPending: isPendingMinistries } = useMinistries();
+  const { data: prayerGroups, isPending: isPendingPrayerGroups } =
+    usePrayerGroups();
 
   const [filteredItems, setFilteredItems] = useState([]);
   const [shownItems, setShownItems] = useState([]);
@@ -151,11 +104,6 @@ export default function Participants() {
 
     setFilteredItems(withAge);
   }, [participants]);
-
-  // useEffect(() => {
-  //   if (!ministries) return;
-  //   setSelectedMinistries(ministries.map((ministry) => ministry._id));
-  // }, [ministries]);
 
   useEffect(() => {
     if (!participants) return;
@@ -381,14 +329,6 @@ export default function Participants() {
           >
             {(g) => <SelectItem key={g.key}>{renderGender(g.key)}</SelectItem>}
           </Select>
-          {/* <CheckboxGroup
-            value={selectedGenders}
-            onValueChange={setSelectedGenders}
-          >
-            Gender
-            <Checkbox value="pria">{renderGender("pria")}</Checkbox>
-            <Checkbox value="wanita">{renderGender("wanita")}</Checkbox>
-          </CheckboxGroup> */}
         </div>
         <Pagination
           isCompact
@@ -400,8 +340,6 @@ export default function Participants() {
         />
       </div>
       <Table
-        // fullWidth={true}
-        // className="w-full"
         isStriped
         isHeaderSticky
         topContent={

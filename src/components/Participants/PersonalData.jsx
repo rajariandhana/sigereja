@@ -2,16 +2,13 @@ import { useContext } from "react";
 import { ParticipantContext } from "../../utils/context";
 import { change, renderGender } from "../Commons";
 import {
-  Button,
   DatePicker,
   Input,
   Select,
   SelectItem,
-  Spinner,
   Textarea,
 } from "@heroui/react";
 import { calculateAge, genders } from "../../utils/util";
-import { parseDate } from "@internationalized/date";
 
 export default function PersonalData() {
   const {

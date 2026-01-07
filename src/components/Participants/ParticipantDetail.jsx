@@ -1,15 +1,11 @@
 import { useNavigate, useParams } from "react-router";
 import instance from "../../libs/axios/instance";
 import { useEffect, useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   addToast,
   Button,
-  Checkbox,
-  CheckboxGroup,
   Code,
-  DatePicker,
-  Input,
   Link,
   Modal,
   ModalBody,
@@ -17,7 +13,6 @@ import {
   ModalFooter,
   ModalHeader,
   Spinner,
-  Textarea,
   useDisclosure,
 } from "@heroui/react";
 import { parseDate } from "@internationalized/date";
@@ -28,56 +23,18 @@ import GroupSelect from "../GroupSelect";
 import { formatToYMD } from "../../utils/util";
 import { IoHammerOutline } from "react-icons/io5";
 import { HiOutlineTrash } from "react-icons/hi";
+import {
+  useMinistries,
+  useParticipant,
+  usePrayerGroups,
+} from "../../hooks/hooks";
 
 export default function ParticipantDetail() {
-  // console.log("HERE ParticipantDetail");
   const { participantId } = useParams();
-  const fetchParticipant = async (participantId) => {
-    try {
-      const response = await instance.get(`/participants/${participantId}`);
-      return response.data.data;
-    } catch (error) {
-      console.error("Error fetching participant:", error);
-    } finally {
-      console.log("Participant fetch attempt finished.");
-    }
-  };
-  const {
-    data: participant,
-    isPending,
-    refetch,
-  } = useQuery({
-    queryKey: ["participants", participantId],
-    queryFn: () => fetchParticipant(participantId),
-  });
-  const fetchMinistries = async () => {
-    try {
-      const response = await instance.get(`/ministries`);
-      return response.data.data;
-    } catch (error) {
-      console.error("Error fetching Ministries:", error);
-    } finally {
-      console.log("Ministries fetch attempt finished.");
-    }
-  };
-  const { data: ministries, isPending: isPendingMinistries } = useQuery({
-    queryKey: ["ministries"],
-    queryFn: fetchMinistries,
-  });
-  const fetchPrayerGroups = async () => {
-    try {
-      const response = await instance.get(`/prayer-groups`);
-      return response.data.data;
-    } catch (error) {
-      console.error("Error fetching PrayerGroups:", error);
-    } finally {
-      console.log("PrayerGroups fetch attempt finished.");
-    }
-  };
-  const { data: prayerGroups, isPending: isPendingPrayerGroups } = useQuery({
-    queryKey: ["prayer-groups"],
-    queryFn: fetchPrayerGroups,
-  });
+  const { data: participant } = useParticipant(participantId);
+
+  const { data: ministries } = useMinistries();
+  const { data: prayerGroups } = usePrayerGroups();
 
   const [name, setName] = useState("");
   const [address, setAddress] = useState("");
@@ -89,12 +46,6 @@ export default function ParticipantDetail() {
   const [baptized, setBaptized] = useState("no");
   const [selectedMinistries, setSelectedMinistries] = useState([]);
   const [selectedPrayerGroups, setSelectedPrayerGroups] = useState([]);
-  // const [participant, setParticipant] = useState();
-  // useEffect(() => {
-  //   if (!participants) return;
-  //   const ps = participants.filter((p) => p._id === participantId);
-  //   setParticipant(ps[0]);
-  // }, [participants]);
 
   const queryClient = useQueryClient();
   const updateMutation = useMutation({
@@ -304,12 +255,11 @@ export default function ParticipantDetail() {
             <>
               <ModalHeader>Konfirmasi Penghapusan</ModalHeader>
               <ModalBody>
-                <p>
-                  Anda akan menghapus data jemaat: 
-                </p>
+                <p>Anda akan menghapus data jemaat:</p>
                 <Code>{participant.name}</Code>
                 <p>
-                  Data yang dihapus tidak akan bisa dikembalikan. Apakah anda yakin?
+                  Data yang dihapus tidak akan bisa dikembalikan. Apakah anda
+                  yakin?
                 </p>
               </ModalBody>
               <ModalFooter className="justify-between">
