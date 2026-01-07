@@ -27,7 +27,8 @@ import { useEffect, useState } from "react";
 import { SearchIcon } from "./example";
 import { renderColorChip, renderColorChips, renderGender } from "../Commons";
 import { IoMdInformationCircleOutline } from "react-icons/io";
-import { calculateAge } from "../../utils/util";
+import { calculateAge, genders } from "../../utils/util";
+import GroupSelect from "../GroupSelect";
 
 const columns = [
   {
@@ -136,7 +137,7 @@ export default function Participants() {
   const [age, setAge] = useState();
   const [minAge, setMinAge] = useState();
   const [maxAge, setMaxAge] = useState();
-  const [selectedGenders, setSelectedGenders] = useState([]);
+  const [selectedGender, setSelectedGender] = useState([]);
   const [selectedMinistries, setSelectedMinistries] = useState([]);
   const [selectedPrayerGroups, setSelectedPrayerGroups] = useState([]);
 
@@ -185,8 +186,7 @@ export default function Participants() {
       }
     }
 
-    if (selectedGenders.length === 1) {
-      const selectedGender = selectedGenders[0];
+    if (selectedGender === "pria" || selectedGender === "wanita") {
       filtered = filtered.filter((p) => p.gender === selectedGender);
     }
 
@@ -194,8 +194,9 @@ export default function Participants() {
       selectedMinistries.length > 0 &&
       selectedMinistries.length < ministries.length
     ) {
+      const selectedKeys = selectedMinistries.map((m) => m.ministryId);
       filtered = filtered.filter((p) =>
-        p.ministries.some((m) => selectedMinistries.includes(m.ministryId._id))
+        p.ministries.some((m) => selectedKeys.includes(m.ministryId._id))
       );
     }
 
@@ -203,10 +204,9 @@ export default function Participants() {
       selectedPrayerGroups.length > 0 &&
       selectedPrayerGroups.length < prayerGroups.length
     ) {
+      const selectedKeys = selectedPrayerGroups.map((m) => m.prayerGroupId);
       filtered = filtered.filter((p) =>
-        p.prayerGroups.some((m) =>
-          selectedPrayerGroups.includes(m.prayerGroupId._id)
-        )
+        p.prayerGroups.some((m) => selectedKeys.includes(m.prayerGroupId._id))
       );
     }
 
@@ -217,7 +217,7 @@ export default function Participants() {
     age,
     minAge,
     maxAge,
-    selectedGenders,
+    selectedGender,
     selectedMinistries,
     ministries,
     selectedPrayerGroups,
@@ -228,7 +228,6 @@ export default function Participants() {
     if (!filteredItems) return;
     setPage(1);
     const nPages = Math.ceil(filteredItems.length / rowsPerPage);
-    console.log("nPages", nPages);
     setPages(nPages);
   }, [filteredItems, rowsPerPage]);
   useEffect(() => {
@@ -236,7 +235,6 @@ export default function Participants() {
     const end = start + rowsPerPage;
     setShownItems(filteredItems.slice(start, end));
   }, [page, filteredItems, rowsPerPage]);
-
 
   const renderCell = (participant, columnKey) => {
     // const cellValue = participant[columnKey];
@@ -297,7 +295,7 @@ export default function Participants() {
   }
 
   return (
-    <div className="w-3/4">
+    <div className="w-full xl:w-3/4">
       {/* <Button onPress={refetch} color="primary">Refetch</Button> */}
       <div className="flex flex-col w-full justify-between gap-4 mb-6">
         <Input
@@ -351,36 +349,46 @@ export default function Participants() {
               </div>
             </div>
           </div>
-          <CheckboxGroup
-            value={selectedMinistries}
-            onValueChange={setSelectedMinistries}
+          <GroupSelect
+            label="Wadah"
+            type="ministries"
+            options={ministries}
+            selecteds={selectedMinistries}
+            setSelecteds={setSelectedMinistries}
+            isClearable={true}
+          />
+          <GroupSelect
+            label="Kelompok Doa"
+            type="prayerGroups"
+            options={prayerGroups}
+            selecteds={selectedPrayerGroups}
+            setSelecteds={setSelectedPrayerGroups}
+            isClearable={true}
+          />
+          <Select
+            label="Jenis Kelamin"
+            selectionMode="single"
+            selectedKeys={[selectedGender]}
+            onChange={(e) => setSelectedGender(e.target.value)}
+            items={genders}
+            renderValue={(items) => {
+              return items.map((item) => (
+                <span key={item.key}>{renderGender(item.data.key)}</span>
+              ));
+            }}
+            variant="faded"
+            isClearable={true}
           >
-            Wadah
-            {ministries.map((ministry) => (
-              <Checkbox value={ministry._id}>
-                {renderColorChip(ministries, ministry._id)}
-              </Checkbox>
-            ))}
-          </CheckboxGroup>
-          <CheckboxGroup
-            value={selectedPrayerGroups}
-            onValueChange={setSelectedPrayerGroups}
-          >
-            Kelompok Doa
-            {prayerGroups.map((prayerGroup) => (
-              <Checkbox value={prayerGroup._id}>
-                {renderColorChip(prayerGroups, prayerGroup._id)}
-              </Checkbox>
-            ))}
-          </CheckboxGroup>
-          <CheckboxGroup
+            {(g) => <SelectItem key={g.key}>{renderGender(g.key)}</SelectItem>}
+          </Select>
+          {/* <CheckboxGroup
             value={selectedGenders}
             onValueChange={setSelectedGenders}
           >
             Gender
             <Checkbox value="pria">{renderGender("pria")}</Checkbox>
             <Checkbox value="wanita">{renderGender("wanita")}</Checkbox>
-          </CheckboxGroup>
+          </CheckboxGroup> */}
         </div>
         <Pagination
           isCompact

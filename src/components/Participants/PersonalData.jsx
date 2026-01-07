@@ -37,7 +37,7 @@ export default function PersonalData() {
   } = useContext(ParticipantContext);
 
   return (
-    <div className="flex flex-col w-3/4 mb-12 gap-4">
+    <div className="flex flex-col w-full xl:w-3/4 mb-12 gap-4">
       <h2 className="text-lg">Data Pribadi</h2>
       <div className="grid grid-cols-2 gap-4 mb-8">
         <Input
@@ -62,7 +62,7 @@ export default function PersonalData() {
             showMonthAndYearPickers
             selectorButtonPlacement="start"
             endContent={
-              <span className="w-full text-black items-end">
+              <span className="w-full text-black items-end text-xs xl:text-md">
                 {calculateAge(birth_date)} tahun
               </span>
             }

@@ -24,7 +24,7 @@ import { parseDate } from "@internationalized/date";
 import { MdKeyboardDoubleArrowLeft } from "react-icons/md";
 import { ParticipantContext } from "../../utils/context";
 import PersonalData from "./PersonalData";
-import MultiSelect from "../MultiSelect";
+import GroupSelect from "../GroupSelect";
 import { formatToYMD } from "../../utils/util";
 import { IoHammerOutline } from "react-icons/io5";
 import { HiOutlineTrash } from "react-icons/hi";
@@ -236,8 +236,8 @@ export default function ParticipantDetail() {
           )}
         </div>
       </div> */}
-      <div className="flex gap-4 w-3/4">
-        <MultiSelect
+      <div className="flex gap-4 w-full xl:w-3/4">
+        <GroupSelect
           label="Wadah"
           type="ministries"
           options={ministries}
@@ -245,7 +245,7 @@ export default function ParticipantDetail() {
           selecteds={selectedMinistries}
           setSelecteds={setSelectedMinistries}
         />
-        <MultiSelect
+        <GroupSelect
           label="Kelompok Doa"
           type="prayerGroups"
           options={prayerGroups}
@@ -254,7 +254,7 @@ export default function ParticipantDetail() {
           setSelecteds={setSelectedPrayerGroups}
         />
       </div>
-      <div className="flex w-3/4 justify-between mt-8">
+      <div className="flex w-full xl:w-3/4 justify-between mt-8">
         <Button
           color="warning"
           variant="ghost"

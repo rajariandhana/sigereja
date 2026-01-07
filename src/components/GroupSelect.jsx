@@ -1,13 +1,14 @@
 import { Select, SelectItem } from "@heroui/react";
 import { change, renderColorChip } from "./Commons";
 
-export default function MultiSelect({
+export default function GroupSelect({
   label,
   type,
   options,
   old,
   selecteds,
   setSelecteds,
+  isClearable=false,
 }) {
   // extract ids for Select
   const selectedKeys = selecteds.map((s) =>
@@ -40,7 +41,8 @@ export default function MultiSelect({
         </div>
       )}
       variant="faded"
-      description={change(old, selecteds)}
+      description={old?change(old, selecteds):<></>}
+      isClearable={isClearable}
     >
       {(option) => (
         <SelectItem key={option._id} textValue={option.label}>
