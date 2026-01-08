@@ -10,16 +10,15 @@ import {
   Button,
   Input,
   Pagination,
-  User,
   Select,
   SelectItem,
-  Dropdown,
-  DropdownTrigger,
-  DropdownMenu,
-  DropdownItem,
-  NumberInput,
-  CheckboxGroup,
-  Checkbox,
+  useDisclosure,
+  ModalFooter,
+  ModalBody,
+  Modal,
+  ModalContent,
+  ModalHeader,
+  Slider,
 } from "@heroui/react";
 import { useEffect, useState } from "react";
 import { SearchIcon } from "./example";
@@ -32,6 +31,7 @@ import {
   useParticipants,
   usePrayerGroups,
 } from "../../hooks/hooks";
+import { IoFilterCircleOutline } from "react-icons/io5";
 
 const columns = [
   {
@@ -85,14 +85,20 @@ export default function Participants() {
   const [nameFilter, setNameFilter] = useState("");
   const [page, setPage] = useState(1);
   const [pages, setPages] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(20);
-  const [inputRowsPerPage, setInputRowsPerPage] = useState("20");
-  const [age, setAge] = useState();
-  const [minAge, setMinAge] = useState();
-  const [maxAge, setMaxAge] = useState();
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [inputRowsPerPage, setInputRowsPerPage] = useState("10");
+  const [ageOption, setAgeOption] = useState(null);
+  const [age, setAge] = useState(50);
+  const [ageRange, setAgeRange] = useState([0, 100]);
   const [selectedGender, setSelectedGender] = useState([]);
   const [selectedMinistries, setSelectedMinistries] = useState([]);
   const [selectedPrayerGroups, setSelectedPrayerGroups] = useState([]);
+
+  const {
+    isOpen: filterIsOpen,
+    onOpen: filterOnOpen,
+    onOpenChange: filterOnOpenChange,
+  } = useDisclosure();
 
   useEffect(() => {
     if (!participants) return;
@@ -121,16 +127,24 @@ export default function Participants() {
     }
 
     // Exact age filter (takes priority)
-    if (age !== undefined && age !== null) {
-      filtered = filtered.filter((p) => p.age === age);
-    }
-    // Age range filter
-    else {
-      if (minAge !== undefined && minAge !== null) {
-        filtered = filtered.filter((p) => p.age >= minAge);
+    // Age filter
+    if (ageOption) {
+      if (ageOption === "range") {
+        filtered = filtered.filter(
+          (p) => p.age >= ageRange[0] && p.age <= ageRange[1]
+        );
       }
-      if (maxAge !== undefined && maxAge !== null) {
-        filtered = filtered.filter((p) => p.age <= maxAge);
+
+      if (ageOption === "below") {
+        filtered = filtered.filter((p) => p.age < age);
+      }
+
+      if (ageOption === "equal") {
+        filtered = filtered.filter((p) => p.age === age);
+      }
+
+      if (ageOption === "above") {
+        filtered = filtered.filter((p) => p.age > age);
       }
     }
 
@@ -162,9 +176,9 @@ export default function Participants() {
   }, [
     participants,
     nameFilter,
+    ageOption,
     age,
-    minAge,
-    maxAge,
+    ageRange,
     selectedGender,
     selectedMinistries,
     ministries,
@@ -226,17 +240,13 @@ export default function Participants() {
       if (!isNaN(n) && n > 0) setRowsPerPage(n);
     }
   }, [inputRowsPerPage, filteredItems]);
+
   useEffect(() => {
-    if (age !== undefined && age !== null) {
-      setMinAge(undefined);
-      setMaxAge(undefined);
+    if (!ageOption) {
+      setAge(50);
+      setAgeRange([0, 100]);
     }
-  }, [age]);
-  useEffect(() => {
-    if (minAge !== undefined || maxAge !== undefined) {
-      setAge(undefined);
-    }
-  }, [minAge, maxAge]);
+  }, [ageOption]);
 
   if (!ministries || !prayerGroups) {
     return <Spinner />;
@@ -245,107 +255,164 @@ export default function Participants() {
   return (
     <div className="w-full xl:w-3/4">
       {/* <Button onPress={refetch} color="primary">Refetch</Button> */}
-      <div className="flex flex-col w-full justify-between gap-4 mb-6">
-        <Input
-          isClearable
-          className="w-fit"
-          placeholder="Cari berdasarkan nama"
-          startContent={<SearchIcon />}
-          value={nameFilter}
-          onClear={() => setNameFilter("")}
-          onValueChange={setNameFilter}
-        />
-        <Select
-          label="Jumlah Baris / Halaman"
-          selectedKeys={new Set([inputRowsPerPage])}
-          onSelectionChange={(keys) => setInputRowsPerPage([...keys][0])}
-          className="w-50"
-        >
-          {numberOfRows.map((page) => (
-            <SelectItem key={page.key}>{page.label}</SelectItem>
-          ))}
-        </Select>
+      {/* <div className="flex flex-col w-full justify-between gap-4 mb-6">
         <div className="flex gap-x-4">
           <div className="w-fit">
-            <div>
-              Usia tepat
-              <NumberInput
-                className="w-20"
-                description="Usia"
-                value={age}
-                onValueChange={setAge}
-                minValue={0}
-              />
-            </div>
-            <div>
-              Jangkauan Usia
-              <div className="flex gap-x-4">
-                <NumberInput
-                  className="w-20"
-                  description="Minimum"
-                  value={minAge}
-                  onValueChange={setMinAge}
-                  minValue={0}
-                />
-                <NumberInput
-                  className="w-20"
-                  description="Maksimum"
-                  value={maxAge}
-                  onValueChange={setMaxAge}
-                  minValue={0}
-                />
-              </div>
-            </div>
+            
           </div>
-          <GroupSelect
-            label="Wadah"
-            type="ministries"
-            options={ministries}
-            selecteds={selectedMinistries}
-            setSelecteds={setSelectedMinistries}
-            isClearable={true}
-          />
-          <GroupSelect
-            label="Kelompok Doa"
-            type="prayerGroups"
-            options={prayerGroups}
-            selecteds={selectedPrayerGroups}
-            setSelecteds={setSelectedPrayerGroups}
-            isClearable={true}
-          />
-          <Select
-            label="Jenis Kelamin"
-            selectionMode="single"
-            selectedKeys={[selectedGender]}
-            onChange={(e) => setSelectedGender(e.target.value)}
-            items={genders}
-            renderValue={(items) => {
-              return items.map((item) => (
-                <span key={item.key}>{renderGender(item.data.key)}</span>
-              ));
-            }}
-            variant="faded"
-            isClearable={true}
-          >
-            {(g) => <SelectItem key={g.key}>{renderGender(g.key)}</SelectItem>}
-          </Select>
         </div>
-        <Pagination
-          isCompact
-          showControls
-          showShadow
-          page={page}
-          total={pages}
-          onChange={(page) => setPage(page)}
-        />
-      </div>
+      </div> */}
       <Table
         isStriped
         isHeaderSticky
         topContent={
-          <>
-            Menampilkan {shownItems.length} / {filteredItems.length}
-          </>
+          <div className="flex flex-col w-full gap-2">
+            <div className="w-full flex justify-between items-center text-sm">
+              <Input
+                isClearable
+                className="w-fit"
+                placeholder="Cari berdasarkan nama"
+                startContent={<SearchIcon />}
+                value={nameFilter}
+                onClear={() => setNameFilter("")}
+                onValueChange={setNameFilter}
+                variant="faded"
+              />
+              <div>
+                <Button
+                  variant="faded"
+                  endContent={<IoFilterCircleOutline />}
+                  onPress={filterOnOpen}
+                >
+                  Filter
+                </Button>
+                <Modal isOpen={filterIsOpen} onOpenChange={filterOnOpenChange}>
+                  <ModalContent>
+                    {(onClose) => (
+                      <>
+                        <ModalHeader>Filter Jemaat</ModalHeader>
+                        <ModalBody className="items-start">
+                          <GroupSelect
+                            label="Wadah"
+                            type="ministries"
+                            options={ministries}
+                            selecteds={selectedMinistries}
+                            setSelecteds={setSelectedMinistries}
+                            isClearable={true}
+                          />
+                          <GroupSelect
+                            label="Kelompok Doa"
+                            type="prayerGroups"
+                            options={prayerGroups}
+                            selecteds={selectedPrayerGroups}
+                            setSelecteds={setSelectedPrayerGroups}
+                            isClearable={true}
+                          />
+                          <div className="w-full flex gap-4">
+                            <Select
+                              label="Jenis Kelamin"
+                              selectionMode="single"
+                              selectedKeys={[selectedGender]}
+                              onChange={(e) =>
+                                setSelectedGender(e.target.value)
+                              }
+                              items={genders}
+                              renderValue={(items) => {
+                                return items.map((item) => (
+                                  <span key={item.key}>
+                                    {renderGender(item.data.key)}
+                                  </span>
+                                ));
+                              }}
+                              variant="faded"
+                              isClearable={true}
+                              className="w-1/2"
+                              size="sm"
+                            >
+                              {(g) => (
+                                <SelectItem key={g.key}>
+                                  {renderGender(g.key)}
+                                </SelectItem>
+                              )}
+                            </Select>
+                            <Select
+                              label="Usia"
+                              selectionMode="single"
+                              // selectedKeys={[ageOption]}
+                              onChange={(e) => setAgeOption(e.target.value)}
+                              variant="faded"
+                              className="w-1/2"
+                              size="sm"
+                              isClearable
+                            >
+                              <SelectItem key="range">Jangkauan</SelectItem>
+                              <SelectItem key="below">Di bawah</SelectItem>
+                              <SelectItem key="equal">Sama dengan</SelectItem>
+                              <SelectItem key="above">Di atas</SelectItem>
+                            </Select>
+                          </div>
+                          {ageOption &&
+                            (ageOption === "range" ? (
+                              <Slider
+                                label="Pilih jangkauan usia"
+                                minValue={0}
+                                maxValue={100}
+                                value={ageRange}
+                                onChange={setAgeRange}
+                                className="w-full"
+                              />
+                            ) : (
+                              <Slider
+                                label="Pilih usia"
+                                minValue={0}
+                                maxValue={100}
+                                value={age}
+                                onChange={setAge}
+                              />
+                            ))}
+                        </ModalBody>
+                        <ModalFooter>
+                          <Button variant="faded" onPress={onClose}>
+                            Tutup
+                          </Button>
+                        </ModalFooter>
+                      </>
+                    )}
+                  </ModalContent>
+                </Modal>
+              </div>
+            </div>
+            <div className="w-full flex justify-between items-center text-sm">
+              <span>
+                Menampilkan {shownItems.length} / {filteredItems.length}
+              </span>
+              <Select
+                label="Jumlah Baris / Halaman"
+                selectedKeys={new Set([inputRowsPerPage])}
+                onSelectionChange={(keys) => setInputRowsPerPage([...keys][0])}
+                variant="faded"
+                labelPlacement="outside-left"
+                className="w-82"
+                size="sm"
+              >
+                {numberOfRows.map((page) => (
+                  <SelectItem key={page.key}>{page.label}</SelectItem>
+                ))}
+              </Select>
+            </div>
+          </div>
+        }
+        bottomContent={
+          <div className="w-full justify-end flex">
+            <Pagination
+              isCompact
+              showControls
+              showShadow
+              page={page}
+              total={pages}
+              onChange={(page) => setPage(page)}
+            />
+          </div>
         }
       >
         <TableHeader columns={columns}>

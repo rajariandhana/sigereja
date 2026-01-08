@@ -90,7 +90,11 @@ export default function ParticipantDetail() {
 
   const navigate = useNavigate();
 
-  const { isOpen, onOpen, onOpenChange } = useDisclosure();
+  const {
+    isOpen: confirmIsOpen,
+    onOpen: confirmOnOpen,
+    onOpenChange: confirmOnOpenChange,
+  } = useDisclosure();
   const deleteMutation = useMutation({
     mutationFn: async () => {
       const response = await instance.delete(
@@ -228,7 +232,7 @@ export default function ParticipantDetail() {
         <Button
           color="danger"
           variant="ghost"
-          onPress={onOpen}
+          onPress={confirmOnOpen}
           isLoading={deleteMutation.isUpdating}
           isDisabled={deleteMutation.isUpdating}
         >
@@ -249,7 +253,7 @@ export default function ParticipantDetail() {
         {JSON.stringify(selectedMinistries)}
         {JSON.stringify(selectedPrayerGroups)}
       </div> */}
-      <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
+      <Modal isOpen={confirmIsOpen} onOpenChange={confirmOnOpenChange}>
         <ModalContent>
           {(onClose) => (
             <>
