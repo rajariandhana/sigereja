@@ -1,5 +1,6 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import instance from "../libs/axios/instance";
+import { addToast } from "@heroui/react";
 
 const fetchParticipants = async () => {
   try {
@@ -62,6 +63,70 @@ export function useMinistries() {
     queryKey: ["ministries"],
     queryFn: fetchMinistries,
   });
+}
+
+export function useMinistryMutation(ministry, onOpen, refetch, name) {
+  const queryClient = useQueryClient();
+
+  const updateMutation = useMutation({
+    mutationFn: async () => {
+      const newData = {
+        name: name,
+      };
+      const response = await instance.patch(
+        `/ministries/${ministry._id}`,
+        newData
+      );
+      return response.data.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["ministries", ministry._id],
+      });
+      queryClient.invalidateQueries({ queryKey: ["participants"] });
+      addToast({
+        title: "Perubahan berhasil disimpan!",
+        // description: ""
+        color: "success",
+      });
+      refetch();
+      onOpen();
+    },
+    onError: () => {
+      // setBack();
+      addToast({
+        title: "Error!",
+        description: "Terjadi kesalahan saat menyimpan data wadah",
+        color: "danger",
+      });
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async () => {
+      const response = await instance.delete(`/ministries/${ministry._id}`);
+      return response.data.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["ministries"] });
+      queryClient.invalidateQueries({ queryKey: ["participants"] });
+      addToast({
+        title: "Wadah berhasil dihapus!",
+        color: "success",
+      });
+      onOpen();
+    },
+    onError: () => {
+      // setBack();
+      addToast({
+        title: "Error!",
+        description: "Terjadi kesalahan ketika menghapus data wadah!",
+        color: "danger",
+      });
+    },
+  });
+
+  return { updateMutation, deleteMutation };
 }
 
 const fetchPrayerGroups = async () => {

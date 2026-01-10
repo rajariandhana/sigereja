@@ -24,6 +24,21 @@ export function formatToYMD(dateValue) {
   return `${year}-${mm}-${dd}`;
 }
 
+export function formatDateTimeID(isoString) {
+  const date = new Date(isoString);
+
+  return date.toLocaleString("id-ID", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
+// "05 Januari 2026 12.49"
+
+
 
 export const genders = [
   {key:"pria", label: "Pria"},

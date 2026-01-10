@@ -21,7 +21,7 @@ const sidebarItems = [
   {
     key: "prayer-group",
     label: "Kelompok Doa",
-    href: "/prayer-group",
+    href: "/kelompok-doa",
     icon: <PiHandsPraying size={24} />,
   },
   // {

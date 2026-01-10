@@ -86,7 +86,7 @@ export default function Participants() {
   const [page, setPage] = useState(1);
   const [pages, setPages] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [inputRowsPerPage, setInputRowsPerPage] = useState("10");
+  const [inputRowsPerPage, setInputRowsPerPage] = useState("20");
   const [ageOption, setAgeOption] = useState(null);
   const [age, setAge] = useState(50);
   const [ageRange, setAgeRange] = useState([0, 100]);
@@ -222,7 +222,7 @@ export default function Participants() {
         return renderGender(participant.gender);
       case "view":
         return (
-          <Link href={`/participants/${participant._id}`}>
+          <Link href={`/jemaat/${participant._id}`}>
             <IoMdInformationCircleOutline />
           </Link>
         );
