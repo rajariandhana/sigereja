@@ -24,6 +24,7 @@ export default function GroupDetail({
   isDeleting,
   name,
   setName,
+  label,
 }) {
   useEffect(() => {
     if (!group) return;
@@ -80,7 +81,7 @@ export default function GroupDetail({
         onOpenChange={confirmOnOpenChange}
         handleDelete={handleDelete}
         isDeleting={isDeleting}
-        label={"Wadah"}
+        label={label}
         toDelete={name}
       ></ConfirmDelete>
     </Modal>

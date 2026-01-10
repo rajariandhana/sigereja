@@ -146,3 +146,67 @@ export function usePrayerGroups() {
     queryFn: fetchPrayerGroups,
   });
 }
+
+export function usePrayerGroupMutation(prayerGroup, onOpen, refetch, name) {
+  const queryClient = useQueryClient();
+
+  const updateMutation = useMutation({
+    mutationFn: async () => {
+      const newData = {
+        name: name,
+      };
+      const response = await instance.patch(
+        `/prayer-groups/${prayerGroup._id}`,
+        newData
+      );
+      return response.data.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["prayer-groups", prayerGroup._id],
+      });
+      queryClient.invalidateQueries({ queryKey: ["participants"] });
+      addToast({
+        title: "Perubahan berhasil disimpan!",
+        // description: ""
+        color: "success",
+      });
+      refetch();
+      onOpen();
+    },
+    onError: () => {
+      // setBack();
+      addToast({
+        title: "Error!",
+        description: "Terjadi kesalahan saat menyimpan data kelompok doa",
+        color: "danger",
+      });
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async () => {
+      const response = await instance.delete(`/prayer-groups/${prayerGroup._id}`);
+      return response.data.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["prayer-groups"] });
+      queryClient.invalidateQueries({ queryKey: ["participants"] });
+      addToast({
+        title: "Kelompok Doa berhasil dihapus!",
+        color: "success",
+      });
+      onOpen();
+    },
+    onError: () => {
+      // setBack();
+      addToast({
+        title: "Error!",
+        description: "Terjadi kesalahan ketika menghapus data kelompok doa!",
+        color: "danger",
+      });
+    },
+  });
+
+  return { updateMutation, deleteMutation };
+}
