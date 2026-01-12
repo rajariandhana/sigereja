@@ -12,18 +12,29 @@ import {
 import { IoMdInformationCircleOutline } from "react-icons/io";
 
 import { AiOutlinePlus } from "react-icons/ai";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import GroupDetail from "./GroupDetail";
 import { renderColorChip } from "./Commons";
+import { useGroupMutation, useGroups } from "../hooks/hooks";
+import GroupCreate from "./GroupCreate";
 
-export default function Groups({ useGroups, useGroupMutation, label, slug }) {
+export default function Groups({ label, slug }) {
   const [group, setGroup] = useState();
+  const {
+    isOpen: createIsOpen,
+    onOpen: createOnOpen,
+    onOpenChange: createOnOpenChange,
+  } = useDisclosure();
   const {
     isOpen: detailIsOpen,
     onOpen: detailOnOpen,
     onOpenChange: detailOnOpenChange,
   } = useDisclosure();
-  const { data: groups, isPending: isPendingGroups, refetch } = useGroups();
+  const {
+    data: groups,
+    isPending: isPendingGroups,
+    refetch,
+  } = useGroups(slug, label);
 
   const handleDetail = (m) => {
     setGroup(m);
@@ -31,12 +42,20 @@ export default function Groups({ useGroups, useGroupMutation, label, slug }) {
   };
 
   const [name, setName] = useState();
+  const [payload, setPayload] = useState();
 
-  const { updateMutation, deleteMutation } = useGroupMutation(
+  useEffect(() => {
+    setPayload({ name: name });
+  }, [name]);
+
+  const { createMutation, updateMutation, deleteMutation } = useGroupMutation(
+    slug,
+    label,
     group,
+    createOnOpenChange,
     detailOnOpenChange,
     refetch,
-    name
+    payload
   );
 
   if (!groups) {
@@ -45,6 +64,16 @@ export default function Groups({ useGroups, useGroupMutation, label, slug }) {
 
   return (
     <div className="w-full xl:w-1/2">
+      <GroupCreate
+        isOpen={createIsOpen}
+        onOpen={createOnOpen}
+        onOpenChange={createOnOpenChange}
+        handleCreate={createMutation.mutate}
+        // isCreating={createMutation.isCreating}
+        name={name}
+        setName={setName}
+        label={label}
+      />
       <Table
         isStriped
         isHeaderSticky
@@ -54,6 +83,7 @@ export default function Groups({ useGroups, useGroupMutation, label, slug }) {
               variant="solid"
               color="primary"
               endContent={<AiOutlinePlus />}
+              onPress={createOnOpen}
             >
               Tambah
             </Button>
