@@ -16,7 +16,11 @@ import {
   Spinner,
   useDisclosure,
 } from "@heroui/react";
-import { parseDate, parseDateTime, parseZonedDateTime } from "@internationalized/date";
+import {
+  parseDate,
+  parseDateTime,
+  parseZonedDateTime,
+} from "@internationalized/date";
 import { MdKeyboardDoubleArrowLeft } from "react-icons/md";
 import { ParticipantContext } from "../../utils/context";
 import PersonalData from "./PersonalData";
@@ -27,6 +31,7 @@ import { HiOutlineTrash } from "react-icons/hi";
 import {
   useMinistries,
   useParticipant,
+  useParticipantsMutation,
   usePrayerGroups,
 } from "../../hooks/hooks";
 
@@ -49,79 +54,6 @@ export default function ParticipantDetail() {
   const [selectedPrayerGroups, setSelectedPrayerGroups] = useState([]);
 
   const queryClient = useQueryClient();
-  const updateMutation = useMutation({
-    mutationFn: async () => {
-      const newData = {
-        name: name,
-        address: address,
-        birth_place: birth_place,
-        birth_date: formatToYMD(birth_date),
-        phone: phone,
-        gender: gender,
-        notes: notes,
-        baptized: baptized === "yes" ? true : false,
-        ministries: selectedMinistries,
-        prayerGroups: selectedPrayerGroups,
-      };
-      const response = await instance.patch(
-        `/participants/${participant._id}`,
-        newData
-      );
-      return response.data.data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["participants", participantId],
-      });
-      addToast({
-        title: "Perubahan berhasil disimpan!",
-        // description: ""
-        color: "success",
-      });
-    },
-    onError: () => {
-      setBack();
-      addToast({
-        title: "Error!",
-        description: "Terjadi kesalahan saat menyimpan data jemaat",
-        color: "danger",
-      });
-    },
-  });
-
-  const navigate = useNavigate();
-
-  const {
-    isOpen: confirmIsOpen,
-    onOpen: confirmOnOpen,
-    onOpenChange: confirmOnOpenChange,
-  } = useDisclosure();
-  const deleteMutation = useMutation({
-    mutationFn: async () => {
-      const response = await instance.delete(
-        `/participants/${participant._id}`
-      );
-      return response.data.data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["participants"] });
-      navigate("/");
-      addToast({
-        title: "Jemaat berhasil dihapus!",
-        // description: ""
-        color: "success",
-      });
-    },
-    onError: () => {
-      setBack();
-      addToast({
-        title: "Error!",
-        description: "Terjadi kesalahan ketika menghapus data jemaat!",
-        color: "danger",
-      });
-    },
-  });
-
   const setBack = () => {
     setName(participant.name);
     setAddress(participant.address);
@@ -135,6 +67,29 @@ export default function ParticipantDetail() {
     setSelectedMinistries(participant.ministries);
     setSelectedPrayerGroups(participant.prayerGroups);
   };
+  const { updateMutation, deleteMutation } = useParticipantsMutation(
+    name,
+    address,
+    birth_place,
+    birth_date,
+    phone,
+    gender,
+    notes,
+    baptized,
+    selectedMinistries,
+    selectedPrayerGroups,
+    participant,
+    setBack
+  );
+
+  const navigate = useNavigate();
+
+  const {
+    isOpen: confirmIsOpen,
+    onOpen: confirmOnOpen,
+    onOpenChange: confirmOnOpenChange,
+  } = useDisclosure();
+
   useEffect(() => {
     if (!participant) return;
     // console.log(participant);

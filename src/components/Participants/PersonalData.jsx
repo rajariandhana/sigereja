@@ -1,7 +1,14 @@
 import { useContext } from "react";
 import { ParticipantContext } from "../../utils/context";
 import { change, renderGender } from "../Commons";
-import { DatePicker, Input, Select, SelectItem, Textarea } from "@heroui/react";
+import {
+  Chip,
+  DatePicker,
+  Input,
+  Select,
+  SelectItem,
+  Textarea,
+} from "@heroui/react";
 import { calculateAge, formatDateTimeID, genders } from "../../utils/util";
 
 export default function PersonalData() {
@@ -31,9 +38,9 @@ export default function PersonalData() {
     <div className="flex flex-col w-full xl:w-3/4 mb-12 gap-4">
       <div className="flex w-full justify-between items-center">
         <h2 className="text-lg">Data Pribadi</h2>
-        <span className="text-sm">
+        <Chip variant="flat" color="warning">
           Terakhir diubah: {formatDateTimeID(participant.updatedAt)}
-        </span>
+        </Chip>
       </div>
       <div className="grid grid-cols-2 gap-4 mb-8">
         <Input

@@ -1,6 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import instance from "../libs/axios/instance";
 import { addToast } from "@heroui/react";
+import { formatToYMD } from "../utils/util";
+import { useNavigate } from "react-router";
 
 const fetchParticipants = async () => {
   try {
@@ -26,6 +28,89 @@ export function useParticipants() {
       return participants;
     },
   });
+}
+
+export function useParticipantsMutation(
+  name,
+  address,
+  birth_place,
+  birth_date,
+  phone,
+  gender,
+  notes,
+  baptized,
+  selectedMinistries,
+  selectedPrayerGroups,
+  participant,
+  setBack
+) {
+  const queryClient = useQueryClient();
+  const updateMutation = useMutation({
+    mutationFn: async () => {
+      const newData = {
+        name: name,
+        address: address,
+        birth_place: birth_place,
+        birth_date: formatToYMD(birth_date),
+        phone: phone,
+        gender: gender,
+        notes: notes,
+        baptized: baptized === "yes" ? true : false,
+        ministries: selectedMinistries,
+        prayerGroups: selectedPrayerGroups,
+      };
+      const response = await instance.patch(
+        `/participants/${participant._id}`,
+        newData
+      );
+      return response.data.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["participants", participant._id],
+      });
+      addToast({
+        title: "Berhasil",
+        description: `Data ${name} berhasil disimpan!`,
+        color: "success",
+      });
+    },
+    onError: () => {
+      setBack;
+      addToast({
+        title: "Error!",
+        description: "Terjadi kesalahan saat menyimpan data jemaat",
+        color: "danger",
+      });
+    },
+  });
+  const navigate = useNavigate();
+  const deleteMutation = useMutation({
+    mutationFn: async () => {
+      const response = await instance.delete(
+        `/participants/${participant._id}`
+      );
+      return response.data.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["participants"] });
+      navigate("/");
+      addToast({
+        title: "Berhasil",
+        description: `Jemaat ${name} berhasil dihapus!`,
+        color: "success",
+      });
+    },
+    onError: () => {
+      setBack();
+      addToast({
+        title: "Error!",
+        description: "Terjadi kesalahan ketika menghapus data jemaat!",
+        color: "danger",
+      });
+    },
+  });
+  return { updateMutation, deleteMutation };
 }
 
 const fetchParticipant = async (participantId) => {
