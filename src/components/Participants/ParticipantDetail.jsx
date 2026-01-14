@@ -82,8 +82,6 @@ export default function ParticipantDetail() {
     setBack
   );
 
-  const navigate = useNavigate();
-
   const {
     isOpen: confirmIsOpen,
     onOpen: confirmOnOpen,

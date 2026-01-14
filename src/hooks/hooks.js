@@ -45,6 +45,40 @@ export function useParticipantsMutation(
   setBack
 ) {
   const queryClient = useQueryClient();
+  const createMutation = useMutation({
+    mutationFn: async () => {
+      const newData = {
+        name: name,
+        address: address,
+        birth_place: birth_place,
+        birth_date: formatToYMD(birth_date),
+        phone: phone,
+        gender: gender,
+        notes: notes,
+        baptized: baptized === "yes" ? true : false,
+        ministries: selectedMinistries,
+        prayerGroups: selectedPrayerGroups,
+      };
+      const response = await instance.post(`/participants`, newData);
+      return response.data.data;
+    },
+    onSuccess: () => {
+      navigate("/");
+      queryClient.invalidateQueries({ queryKey: ["participants"] });
+      addToast({
+        title: "Berhasil",
+        description: `Jemaat ${name} berhasil disimpan!`,
+        color: "success",
+      });
+    },
+    onError: () => {
+      addToast({
+        title: "Error!",
+        description: "Terjadi kesalahan ketika menambah data jemaat!",
+        color: "danger",
+      });
+    },
+  });
   const updateMutation = useMutation({
     mutationFn: async () => {
       const newData = {
@@ -110,7 +144,7 @@ export function useParticipantsMutation(
       });
     },
   });
-  return { updateMutation, deleteMutation };
+  return { createMutation, updateMutation, deleteMutation };
 }
 
 const fetchParticipant = async (participantId) => {

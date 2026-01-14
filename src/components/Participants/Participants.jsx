@@ -33,6 +33,8 @@ import {
 } from "../../hooks/hooks";
 import { IoFilterCircleOutline } from "react-icons/io5";
 import { monthsKeys } from "../../utils/constants";
+import ParticipantCreate from "./ParticipantCreate";
+import { AiOutlinePlus } from "react-icons/ai";
 
 const columns = [
   {
@@ -107,13 +109,19 @@ export default function Participants() {
     onOpenChange: filterOnOpenChange,
   } = useDisclosure();
 
+  const {
+    isOpen: createIsOpen,
+    onOpen: createOnOpen,
+    onOpenChange: createOnOpenChange,
+  } = useDisclosure();
+
   const formatParticipants = (participants) => {
     return participants.map((participant) => ({
       ...participant,
       age: calculateAge(participant.birth_date),
       month: getMonthNumber(participant.birth_date),
     }));
-  }
+  };
 
   useEffect(() => {
     if (!participants) return;
@@ -156,7 +164,7 @@ export default function Participants() {
 
     if (months.size > 0) {
       filtered = filtered.filter((p) => months.has(p.month));
-    } 
+    }
 
     if (selectedGender === "pria" || selectedGender === "wanita") {
       filtered = filtered.filter((p) => p.gender === selectedGender);
@@ -274,6 +282,17 @@ export default function Participants() {
           </div>
         </div>
       </div> */}
+      <div className="flex w-full justify-end mb-4">
+        <Button
+          variant="solid"
+          color="primary"
+          endContent={<AiOutlinePlus />}
+          as={Link}
+          href="/jemaat/tambah"
+        >
+          Tambah Jemaat Baru
+        </Button>
+      </div>
       <Table
         isStriped
         isHeaderSticky

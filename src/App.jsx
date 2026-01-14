@@ -8,6 +8,7 @@ import Participants from './components/Participants/Participants'
 import ParticipantDetail from './components/Participants/ParticipantDetail'
 import Ministries from './components/Ministries/Ministries'
 import PrayerGroups from './components/PrayerGroups/PrayerGroups'
+import ParticipantCreate from './components/Participants/ParticipantCreate'
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
       <Route element={<Layout />}>
         <Route path="/" element={<Participants />} />
         <Route path="/jemaat" element={<Participants />} />
+        <Route path="/jemaat/tambah" element={<ParticipantCreate />} />
         <Route path="/jemaat/:participantId" element={<ParticipantDetail />} />
         <Route path="/wadah" element={<Ministries />} />
         <Route path="/kelompok-doa" element={<PrayerGroups />} />
