@@ -24,7 +24,7 @@ import { useEffect, useState } from "react";
 import { SearchIcon } from "./example";
 import { renderColorChips, renderGender } from "../Commons";
 import { IoMdInformationCircleOutline } from "react-icons/io";
-import { calculateAge, genders } from "../../utils/util";
+import { calculateAge, genders, getMonthNumber } from "../../utils/util";
 import GroupSelect from "../GroupSelect";
 import {
   useMinistries,
@@ -32,6 +32,7 @@ import {
   usePrayerGroups,
 } from "../../hooks/hooks";
 import { IoFilterCircleOutline } from "react-icons/io5";
+import { monthsKeys } from "../../utils/constants";
 
 const columns = [
   {
@@ -64,6 +65,11 @@ const columns = [
     label: "Lihat",
     width: 10,
   },
+  // {
+  //   key: "month",
+  //   label: "Bulan",
+  //   width: 10
+  // }
 ];
 
 const numberOfRows = [
@@ -90,6 +96,7 @@ export default function Participants() {
   const [ageOption, setAgeOption] = useState(null);
   const [age, setAge] = useState(50);
   const [ageRange, setAgeRange] = useState([0, 100]);
+  const [months, setMonths] = useState(new Set([]));
   const [selectedGender, setSelectedGender] = useState([]);
   const [selectedMinistries, setSelectedMinistries] = useState([]);
   const [selectedPrayerGroups, setSelectedPrayerGroups] = useState([]);
@@ -100,24 +107,23 @@ export default function Participants() {
     onOpenChange: filterOnOpenChange,
   } = useDisclosure();
 
-  useEffect(() => {
-    if (!participants) return;
-
-    const withAge = participants.map((participant) => ({
+  const formatParticipants = (participants) => {
+    return participants.map((participant) => ({
       ...participant,
       age: calculateAge(participant.birth_date),
+      month: getMonthNumber(participant.birth_date),
     }));
+  }
 
-    setFilteredItems(withAge);
+  useEffect(() => {
+    if (!participants) return;
+    const calculated = formatParticipants(participants);
+    setFilteredItems(calculated);
   }, [participants]);
 
   useEffect(() => {
     if (!participants) return;
-
-    let filtered = participants.map((participant) => ({
-      ...participant,
-      age: calculateAge(participant.birth_date),
-    }));
+    let filtered = formatParticipants(participants);
 
     // Name filter
     if (nameFilter) {
@@ -147,6 +153,10 @@ export default function Participants() {
         filtered = filtered.filter((p) => p.age > age);
       }
     }
+
+    if (months.size > 0) {
+      filtered = filtered.filter((p) => months.has(p.month));
+    } 
 
     if (selectedGender === "pria" || selectedGender === "wanita") {
       filtered = filtered.filter((p) => p.gender === selectedGender);
@@ -179,6 +189,7 @@ export default function Participants() {
     ageOption,
     age,
     ageRange,
+    months,
     selectedGender,
     selectedMinistries,
     ministries,
@@ -203,9 +214,8 @@ export default function Participants() {
     switch (columnKey) {
       case "name":
         return participant.name;
-      case "age": {
+      case "age":
         return participant.age;
-      }
       case "ministries":
         return renderColorChips(
           participant.ministries,
@@ -226,6 +236,8 @@ export default function Participants() {
             <IoMdInformationCircleOutline />
           </Link>
         );
+      // case "month":
+      //   return participant.month;
       default:
         return JSON.stringify(columnKey);
     }
@@ -370,6 +382,19 @@ export default function Participants() {
                                 onChange={setAge}
                               />
                             ))}
+                          <Select
+                            label="Bulan Lahir"
+                            selectedKeys={months}
+                            selectionMode="multiple"
+                            onSelectionChange={setMonths}
+                            isClearable={true}
+                          >
+                            {monthsKeys.map((month) => (
+                              <SelectItem key={month.key}>
+                                {month.label}
+                              </SelectItem>
+                            ))}
+                          </Select>
                         </ModalBody>
                         <ModalFooter>
                           <Button variant="faded" onPress={onClose}>

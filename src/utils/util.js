@@ -15,6 +15,10 @@ export function calculateAge(birthDateString) {
   return age;
 }
 
+export function getMonthNumber(birthDateString) {
+  return birthDateString.split("-")[1];
+}
+
 export function formatToYMD(dateValue) {
   const { year, month, day } = dateValue;
 
