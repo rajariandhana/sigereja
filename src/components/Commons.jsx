@@ -9,8 +9,8 @@ export function renderGender(gender) {
   );
 }
 
-export const renderColorChip = (mapping, id) => {
-  const { name, color } = mapping.find((m) => m._id === id);
+export const renderColorChip = (mapping, identifier) => {
+  const { name, color } = mapping.find((m) => m.slug === identifier || m._id === identifier);
   return (
     <span
       className={`bg-${color}-100 text-${color}-500 text-xs xl:text-sm rounded-full px-2 py-1`}
@@ -20,13 +20,15 @@ export const renderColorChip = (mapping, id) => {
   );
 };
 export const renderColorChips = (ls, mapping, type) => {
+  console.log(ls);
   return (
     <span className="flex flex-wrap gap-2">
-      {ls.map((l) =>
-        renderColorChip(
+      {ls.map((l) => {
+        return renderColorChip(
           mapping,
           type === "ministries" ? l.ministryId._id : l.prayerGroupId._id
         )
+      }
       )}
     </span>
   );

@@ -3,6 +3,8 @@ import instance from "../libs/axios/instance";
 import { addToast } from "@heroui/react";
 import { formatToYMD } from "../utils/util";
 import { useNavigate } from "react-router";
+import { useState } from "react";
+import { parseDate } from "@internationalized/date";
 
 const fetchParticipants = async () => {
   try {
@@ -30,121 +32,94 @@ export function useParticipants() {
   });
 }
 
-export function useParticipantsMutation(
-  name,
-  address,
-  birth_place,
-  birth_date,
-  phone,
-  gender,
-  notes,
-  baptized,
-  selectedMinistries,
-  selectedPrayerGroups,
+export function useParticipantForm(initialData = {}) {
+  return useState({
+    name: initialData.name ?? "",
+    address: initialData.address ?? "",
+    birth_place: initialData.birth_place ?? "",
+    birth_date: initialData.birth_date
+      ? parseDate(initialData.birth_date)
+      : undefined,
+    phone: initialData.phone ?? "",
+    gender: initialData.gender ?? undefined,
+    notes: initialData.notes ?? "",
+    baptized: initialData.baptized ? "yes" : "no",
+    ministrySlugs: initialData.ministrySlugs ?? new Set([]),
+    prayerGroupSlugs: initialData.prayerGroupSlugs ?? new Set([]),
+  });
+}
+
+function buildParticipantPayload(form) {
+  const payload = {
+    name: form.name,
+    address: form.address,
+    birth_place: form.birth_place,
+    birth_date: formatToYMD(form.birth_date),
+    phone: form.phone,
+    gender: form.gender,
+    notes: form.notes,
+    baptized: form.baptized === "yes",
+    ministrySlugs: [...form.ministrySlugs],
+    prayerGroupSlugs: [...form.prayerGroupSlugs],
+  };
+  console.log("PAYLOAD", payload);
+  return payload;
+}
+
+export function useParticipantsMutation({
+  form,
   participant,
-  setBack
-) {
+  mode, // "create" | "update" | "delete"
+  onReset,
+}) {
   const queryClient = useQueryClient();
-  const createMutation = useMutation({
-    mutationFn: async () => {
-      const newData = {
-        name: name,
-        address: address,
-        birth_place: birth_place,
-        birth_date: formatToYMD(birth_date),
-        phone: phone,
-        gender: gender,
-        notes: notes,
-        baptized: baptized === "yes" ? true : false,
-        ministries: selectedMinistries,
-        prayerGroups: selectedPrayerGroups,
-      };
-      const response = await instance.post(`/participants`, newData);
-      return response.data.data;
-    },
-    onSuccess: () => {
-      navigate("/");
-      queryClient.invalidateQueries({ queryKey: ["participants"] });
-      addToast({
-        title: "Berhasil",
-        description: `Jemaat ${name} berhasil disimpan!`,
-        color: "success",
-      });
-    },
-    onError: () => {
-      addToast({
-        title: "Error!",
-        description: "Terjadi kesalahan ketika menambah data jemaat!",
-        color: "danger",
-      });
-    },
-  });
-  const updateMutation = useMutation({
-    mutationFn: async () => {
-      const newData = {
-        name: name,
-        address: address,
-        birth_place: birth_place,
-        birth_date: formatToYMD(birth_date),
-        phone: phone,
-        gender: gender,
-        notes: notes,
-        baptized: baptized === "yes" ? true : false,
-        ministries: selectedMinistries,
-        prayerGroups: selectedPrayerGroups,
-      };
-      const response = await instance.patch(
-        `/participants/${participant._id}`,
-        newData
-      );
-      return response.data.data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["participants", participant._id],
-      });
-      addToast({
-        title: "Berhasil",
-        description: `Data ${name} berhasil disimpan!`,
-        color: "success",
-      });
-    },
-    onError: () => {
-      setBack;
-      addToast({
-        title: "Error!",
-        description: "Terjadi kesalahan saat menyimpan data jemaat",
-        color: "danger",
-      });
-    },
-  });
   const navigate = useNavigate();
-  const deleteMutation = useMutation({
+  return useMutation({
     mutationFn: async () => {
-      const response = await instance.delete(
-        `/participants/${participant._id}`
-      );
-      return response.data.data;
+      const payload = buildParticipantPayload(form);
+      if (mode === "create") {
+        const response = await instance.post(`/participants`, payload);
+        return response.data.data;
+      } else if (mode === "update") {
+        const response = await instance.patch(
+          `/participants/${participant._id}`,
+          payload
+        );
+        return response.data.data;
+      } else if (mode === "delete") {
+        const response = await instance.delete(
+          `/participants/${participant._id}`
+        );
+        return response.data.data;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["participants"] });
-      navigate("/");
+      if (mode === "update") {
+        queryClient.invalidateQueries({
+          queryKey: ["participants", participant._id],
+        });
+      } else if (mode === "create" || mode === "delete") {
+        navigate("/");
+      }
       addToast({
         title: "Berhasil",
-        description: `Jemaat ${name} berhasil dihapus!`,
+        description:
+          mode === "delete"
+            ? `Jemaat ${form.name} berhasil dihapus!`
+            : `Data ${form.name} berhasil disimpan!`,
         color: "success",
       });
     },
     onError: () => {
-      setBack();
+      onReset?.();
       addToast({
         title: "Error!",
-        description: "Terjadi kesalahan ketika menghapus data jemaat!",
+        description: "Terjadi kesalahan saat menyimpan data jemaat!",
         color: "danger",
       });
     },
   });
-  return { createMutation, updateMutation, deleteMutation };
 }
 
 const fetchParticipant = async (participantId) => {
