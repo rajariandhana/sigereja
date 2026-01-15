@@ -20,7 +20,6 @@ export const renderColorChip = (mapping, identifier) => {
   );
 };
 export const renderColorChips = (ls, mapping, type) => {
-  console.log(ls);
   return (
     <span className="flex flex-wrap gap-2">
       {ls.map((l) => {

@@ -31,9 +31,11 @@ import { HiOutlineTrash } from "react-icons/hi";
 import {
   useMinistries,
   useParticipant,
+  useParticipantForm,
   useParticipantsMutation,
   usePrayerGroups,
 } from "../../hooks/hooks";
+import ParticipantForm from "./ParticipantForm";
 
 export default function ParticipantDetail() {
   const { participantId } = useParams();
@@ -42,45 +44,17 @@ export default function ParticipantDetail() {
   const { data: ministries } = useMinistries();
   const { data: prayerGroups } = usePrayerGroups();
 
-  const [name, setName] = useState("");
-  const [address, setAddress] = useState("");
-  const [birth_place, setBirth_place] = useState("");
-  const [birth_date, setBirth_date] = useState();
-  const [phone, setPhone] = useState("");
-  const [gender, setGender] = useState();
-  const [notes, setNotes] = useState("");
-  const [baptized, setBaptized] = useState("no");
-  const [selectedMinistries, setSelectedMinistries] = useState([]);
-  const [selectedPrayerGroups, setSelectedPrayerGroups] = useState([]);
+  const [form, setForm] = useParticipantForm();
 
-  const queryClient = useQueryClient();
-  const setBack = () => {
-    setName(participant.name);
-    setAddress(participant.address);
-    setBirth_place(participant.birth_place);
-    setBirth_date(parseDate(participant.birth_date));
-    setPhone(participant.phone);
-    setGender(participant.gender);
-    setNotes(participant.notes);
-    participant.baptized = participant.baptized === true ? "yes" : "no";
-    setBaptized(participant.baptized);
-    setSelectedMinistries(participant.ministries);
-    setSelectedPrayerGroups(participant.prayerGroups);
-  };
-  const { updateMutation, deleteMutation } = useParticipantsMutation(
-    name,
-    address,
-    birth_place,
-    birth_date,
-    phone,
-    gender,
-    notes,
-    baptized,
-    selectedMinistries,
-    selectedPrayerGroups,
-    participant,
-    setBack
-  );
+  const updateMutation = useParticipantsMutation({
+    form: form,
+    mode: "update",
+    participant: participant,
+  });
+  const deleteMutation = useParticipantsMutation({
+    mode: "delete",
+    participant: participant,
+  })
 
   const {
     isOpen: confirmIsOpen,
@@ -89,165 +63,54 @@ export default function ParticipantDetail() {
   } = useDisclosure();
 
   useEffect(() => {
-    if (!participant) return;
-    // console.log(participant);
-    setBack();
-  }, [participant]);
-
-  // useEffect(() => {
-  //   console.log("birth_date", birth_date);
-  // }, [birth_date]);
-
-  // useEffect(() => {
-  //   console.log("GENDER", JSON.stringify(gender));
-  // }, [gender]);
-  // useEffect(() => {
-  //   console.log("baptized", JSON.stringify(baptized));
-  // }, [baptized]);
+    if (!participant || !ministries || !prayerGroups) return;
+    // console.log(participant.ministries);
+    const ministryIds = new Set(
+      participant.ministries.map((m) => m.ministryId)
+    );
+    const ministrySlugs = ministries
+      .filter((m) => ministryIds.has(m._id))
+      .map((m) => m.slug);
+    // console.log(ministrySlugs);
+    const prayerGroupIds = new Set(
+      participant.prayerGroups.map((m) => m.prayerGroupId)
+    );
+    const prayerGroupSlugs = prayerGroups
+      .filter((p) => prayerGroupIds.has(p._id))
+      .map((p) => p.slug);
+    // console.log(prayerGroupSlugs);
+    // setBack();
+    setForm({
+      name: participant.name ?? "",
+      address: participant.address ?? "",
+      birth_place: participant.birth_place ?? "",
+      birth_date: participant.birth_date
+        ? parseDate(participant.birth_date)
+        : undefined,
+      phone: participant.phone ?? "",
+      gender: participant.gender ?? undefined,
+      notes: participant.notes ?? "",
+      baptized: participant.baptized ? "yes" : "no",
+      ministrySlugs: ministrySlugs ?? new Set([]),
+      prayerGroupSlugs: prayerGroupSlugs ?? new Set([]),
+    });
+  }, [participant, ministries, prayerGroups]);
 
   if (!participant || !ministries || !prayerGroups) return <Spinner />;
   return (
-    <ParticipantContext.Provider
-      className="flex flex-col gap-12"
-      value={{
-        participant,
-        name,
-        setName,
-        address,
-        setAddress,
-        birth_place,
-        setBirth_place,
-        birth_date,
-        setBirth_date,
-        phone,
-        setPhone,
-        gender,
-        setGender,
-        notes,
-        setNotes,
-        baptized,
-        setBaptized,
-        updatePersonalData: updateMutation.mutate,
-        isUpdating: updateMutation.isPending,
-      }}
-    >
-      <Link href={`/`} className="mb-8">
-        <MdKeyboardDoubleArrowLeft />
-        Kembali
-      </Link>
-      {/* {JSON.stringify(participant)} */}
-      <PersonalData />
-      {/* <div className="flex flex-col gap-4">
-        <h2 className="text-lg">Wadah</h2>
-        <div className="flex gap-2">
-          {selectedMinistries.map((ministry) =>
-            renderColorChip(ministries, ministry.ministryId)
-          )}
-        </div>
-      </div> */}
-      <div className="flex gap-4 w-full xl:w-3/4">
-        <GroupSelect
-          label="Wadah"
-          type="ministries"
-          options={ministries}
-          old={participant.ministries}
-          selecteds={selectedMinistries}
-          setSelecteds={setSelectedMinistries}
-        />
-        <GroupSelect
-          label="Kelompok Doa"
-          type="prayerGroups"
-          options={prayerGroups}
-          old={participant.prayerGroups}
-          selecteds={selectedPrayerGroups}
-          setSelecteds={setSelectedPrayerGroups}
-        />
-      </div>
-      <div className="flex w-full xl:w-3/4 justify-between mt-8">
-        <Button
-          color="warning"
-          variant="ghost"
-          onPress={updateMutation.mutate}
-          isLoading={updateMutation.isUpdating}
-          isDisabled={updateMutation.isUpdating}
-        >
-          {updateMutation.isUpdating ? (
-            <>
-              <Spinner />
-              "Menyimpan..."
-            </>
-          ) : (
-            <>
-              <IoHammerOutline size={20} />
-              Simpan Semua Perubahan
-            </>
-          )}
-        </Button>
-        <Button
-          color="danger"
-          variant="ghost"
-          onPress={confirmOnOpen}
-          isLoading={deleteMutation.isUpdating}
-          isDisabled={deleteMutation.isUpdating}
-        >
-          {deleteMutation.isUpdating ? (
-            <>
-              <Spinner color="danger" />
-              "Menghapus..."
-            </>
-          ) : (
-            <>
-              <HiOutlineTrash size={20} />
-              Hapus Jemaat
-            </>
-          )}
-        </Button>
-      </div>
-      {/* <div>
-        {JSON.stringify(selectedMinistries)}
-        {JSON.stringify(selectedPrayerGroups)}
-      </div> */}
-      <Modal isOpen={confirmIsOpen} onOpenChange={confirmOnOpenChange}>
-        <ModalContent>
-          {(onClose) => (
-            <>
-              <ModalHeader>Konfirmasi Penghapusan</ModalHeader>
-              <ModalBody>
-                <p>Anda akan menghapus data jemaat:</p>
-                <Code>{participant.name}</Code>
-                <p>
-                  Data yang dihapus tidak akan bisa dikembalikan. Apakah anda
-                  yakin?
-                </p>
-              </ModalBody>
-              <ModalFooter className="justify-between">
-                <Button variant="shadow" onPress={onClose}>
-                  Kembali
-                </Button>
-                <Button
-                  color="danger"
-                  variant="ghost"
-                  onPress={deleteMutation.mutate}
-                  isLoading={deleteMutation.isUpdating}
-                  isDisabled={deleteMutation.isUpdating}
-                >
-                  {deleteMutation.isUpdating ? (
-                    <>
-                      <Spinner color="danger" />
-                      "Menghapus..."
-                    </>
-                  ) : (
-                    <>
-                      <HiOutlineTrash size={20} />
-                      Hapus Jemaat
-                    </>
-                  )}
-                </Button>
-              </ModalFooter>
-            </>
-          )}
-        </ModalContent>
-      </Modal>
-    </ParticipantContext.Provider>
+    <>
+      <h2 className="text-lg">Data Jemaat</h2>
+      <ParticipantForm
+        form={form}
+        setForm={setForm}
+        ministries={ministries}
+        prayerGroups={prayerGroups}
+        mode="edit"
+        onSubmit={updateMutation.mutate}
+        isSubmitting={updateMutation.isPending}
+        onDelete={deleteMutation.mutate}
+        isDeleting={deleteMutation.isPending}
+      />
+    </>
   );
 }

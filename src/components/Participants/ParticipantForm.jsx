@@ -19,6 +19,8 @@ export default function ParticipantForm({
   mode,
   onSubmit,
   isSubmitting,
+  onDelete,
+  isDeleting
 }) {
   const update = (key) => (value) => setForm((f) => ({ ...f, [key]: value }));
 
@@ -127,7 +129,7 @@ export default function ParticipantForm({
           setSelecteds={(v) => update("prayerGroupSlugs")(v)}
         />
       </div>
-      <div className="flex w-full xl:w-3/4 justify-end mt-8">
+      <div className="flex w-full xl:w-3/4 justify-between mt-8">
         <Button
           color="primary"
           variant="ghost"
@@ -135,8 +137,19 @@ export default function ParticipantForm({
           isLoading={isSubmitting}
         >
           <IoHammerOutline size={20} />
-          {mode === "create" ? "Simpan Data Jemaat" : "Simpan Perubahan"}
+          Simpan Data Jemaat
         </Button>
+        {mode === "edit" && (
+          <Button
+            color="danger"
+            variant="ghost"
+            onPress={onDelete}
+            isLoading={isDeleting}
+          >
+            <IoHammerOutline size={20} />
+            Hapus Data Jemaat
+          </Button>
+        )}
       </div>
     </>
   );

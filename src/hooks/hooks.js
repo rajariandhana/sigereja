@@ -68,14 +68,20 @@ function buildParticipantPayload(form) {
 
 export function useParticipantsMutation({
   form,
-  participant,
   mode, // "create" | "update" | "delete"
+  participant,
   onReset,
 }) {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   return useMutation({
     mutationFn: async () => {
+      if (mode === "delete") {
+        const response = await instance.delete(
+          `/participants/${participant._id}`
+        );
+        return response.data.data;
+      }
       const payload = buildParticipantPayload(form);
       if (mode === "create") {
         const response = await instance.post(`/participants`, payload);
@@ -84,11 +90,6 @@ export function useParticipantsMutation({
         const response = await instance.patch(
           `/participants/${participant._id}`,
           payload
-        );
-        return response.data.data;
-      } else if (mode === "delete") {
-        const response = await instance.delete(
-          `/participants/${participant._id}`
         );
         return response.data.data;
       }
@@ -106,12 +107,13 @@ export function useParticipantsMutation({
         title: "Berhasil",
         description:
           mode === "delete"
-            ? `Jemaat ${form.name} berhasil dihapus!`
+            ? `Jemaat berhasil dihapus!`
             : `Data ${form.name} berhasil disimpan!`,
         color: "success",
       });
     },
-    onError: () => {
+    onError: (err) => {
+      console.log(err);
       onReset?.();
       addToast({
         title: "Error!",
