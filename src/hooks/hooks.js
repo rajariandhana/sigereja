@@ -62,7 +62,7 @@ function buildParticipantPayload(form) {
     ministrySlugs: [...form.ministrySlugs],
     prayerGroupSlugs: [...form.prayerGroupSlugs],
   };
-  console.log("PAYLOAD", payload);
+  // console.log("PAYLOAD", payload);
   return payload;
 }
 
@@ -183,7 +183,6 @@ export function useGroupMutation(
         color: "success",
       });
       modal_create();
-      console.log("nullify group");
     },
     onError: (err) => {
       console.log(err);

@@ -5,7 +5,7 @@ import { Routes, Route } from 'react-router'
 import Layout from './components/Layout'
 import UnderMaintenance from './components/UnderMaintenance'
 import Participants from './components/Participants/Participants'
-import ParticipantDetail from './components/Participants/ParticipantDetail'
+import ParticipantEdit from './components/Participants/ParticipantEdit'
 import Ministries from './components/Ministries/Ministries'
 import PrayerGroups from './components/PrayerGroups/PrayerGroups'
 import ParticipantCreate from './components/Participants/ParticipantCreate'
@@ -17,7 +17,7 @@ function App() {
         <Route path="/" element={<Participants />} />
         <Route path="/jemaat" element={<Participants />} />
         <Route path="/jemaat/tambah" element={<ParticipantCreate />} />
-        <Route path="/jemaat/:participantId" element={<ParticipantDetail />} />
+        <Route path="/jemaat/:participantId" element={<ParticipantEdit />} />
         <Route path="/wadah" element={<Ministries />} />
         <Route path="/kelompok-doa" element={<PrayerGroups />} />
         <Route path="/settings" element={<UnderMaintenance />} />

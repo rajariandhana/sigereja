@@ -34,6 +34,7 @@ export const renderColorChips = (ls, mapping, type) => {
 };
 
 export const change = (a, b) => {
+  if (!a || !b) return <></>;
   if (a!=b) {
     // console.log(a,b);
     return <span className="text-warning">Terdeteksi perubahan!</span>

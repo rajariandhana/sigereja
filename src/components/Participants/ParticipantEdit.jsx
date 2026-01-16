@@ -1,33 +1,9 @@
-import { useNavigate, useParams } from "react-router";
-import instance from "../../libs/axios/instance";
-import { useEffect, useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  addToast,
-  Button,
-  Code,
-  DateInput,
-  Link,
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  Spinner,
-  useDisclosure,
-} from "@heroui/react";
-import {
-  parseDate,
-  parseDateTime,
-  parseZonedDateTime,
-} from "@internationalized/date";
+import { useParams } from "react-router";
+import { useEffect } from "react";
+import { Chip, Link, Spinner, useDisclosure } from "@heroui/react";
+import { parseDate } from "@internationalized/date";
 import { MdKeyboardDoubleArrowLeft } from "react-icons/md";
-import { ParticipantContext } from "../../utils/context";
-import PersonalData from "./PersonalData";
-import GroupSelect from "../GroupSelect";
-import { formatDateTimeID, formatToYMD } from "../../utils/util";
-import { IoHammerOutline } from "react-icons/io5";
-import { HiOutlineTrash } from "react-icons/hi";
+import { formatDateTimeID } from "../../utils/util";
 import {
   useMinistries,
   useParticipant,
@@ -36,6 +12,7 @@ import {
   usePrayerGroups,
 } from "../../hooks/hooks";
 import ParticipantForm from "./ParticipantForm";
+import ConfirmDelete from "../ConfirmDelete";
 
 export default function ParticipantDetail() {
   const { participantId } = useParams();
@@ -54,12 +31,12 @@ export default function ParticipantDetail() {
   const deleteMutation = useParticipantsMutation({
     mode: "delete",
     participant: participant,
-  })
+  });
 
   const {
-    isOpen: confirmIsOpen,
-    onOpen: confirmOnOpen,
-    onOpenChange: confirmOnOpenChange,
+    isOpen: confirmDeleteIsOpen,
+    onOpen: confirmDeleteOnOpen,
+    onOpenChange: confirmDeleteOnOpenChange,
   } = useDisclosure();
 
   useEffect(() => {
@@ -98,8 +75,26 @@ export default function ParticipantDetail() {
 
   if (!participant || !ministries || !prayerGroups) return <Spinner />;
   return (
-    <>
-      <h2 className="text-lg">Data Jemaat</h2>
+    <div className="flex flex-col w-full xl:w-3/4 gap-4">
+      <Link href={`/`}>
+        <MdKeyboardDoubleArrowLeft />
+        Kembali
+      </Link>
+      <div className="flex w-full justify-between items-center">
+        <h2 className="text-lg">Data Pribadi</h2>
+        <Chip variant="flat" color="warning">
+          Terakhir diubah: {formatDateTimeID(participant.updatedAt)}
+        </Chip>
+      </div>
+      <ConfirmDelete
+        isOpen={confirmDeleteIsOpen}
+        onOpen={confirmDeleteOnOpen}
+        onOpenChange={confirmDeleteOnOpenChange}
+        handleDelete={deleteMutation.mutate}
+        isDeleting={deleteMutation.isPending}
+        label={"Jemaat"}
+        toDelete={participant.name}
+      />
       <ParticipantForm
         form={form}
         setForm={setForm}
@@ -108,9 +103,10 @@ export default function ParticipantDetail() {
         mode="edit"
         onSubmit={updateMutation.mutate}
         isSubmitting={updateMutation.isPending}
-        onDelete={deleteMutation.mutate}
+        onDelete={confirmDeleteOnOpen}
         isDeleting={deleteMutation.isPending}
+        participant={participant}
       />
-    </>
+    </div>
   );
 }
