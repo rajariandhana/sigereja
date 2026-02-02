@@ -22,3 +22,7 @@ shownItems
 since there is already participants should participantdetail fetch /part/id or filter from ps or tanstack idk
 
 kasih ispending spinner waktu ngupdate dan waktu delete
+
+### Pernikahan
+/pernikahan -> table of marriages
+click -> open modal -> edit marriages, husband wife date

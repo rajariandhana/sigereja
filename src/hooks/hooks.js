@@ -13,7 +13,7 @@ const fetchParticipants = async () => {
   } catch (error) {
     console.error("Error fetching participants:", error);
   } finally {
-    console.log("Participants fetch attempt finished.");
+    // console.log("Participants fetch attempt finished.");
   }
 };
 
@@ -25,7 +25,7 @@ export function useParticipants() {
     queryFn: fetchParticipants,
     select: (participants) => {
       participants.forEach((p) =>
-        queryClient.setQueryData(["participants", p.id], p)
+        queryClient.setQueryData(["participants", p.id], p),
       );
       return participants;
     },
@@ -78,7 +78,7 @@ export function useParticipantsMutation({
     mutationFn: async () => {
       if (mode === "delete") {
         const response = await instance.delete(
-          `/participants/${participant._id}`
+          `/participants/${participant._id}`,
         );
         return response.data.data;
       }
@@ -89,7 +89,7 @@ export function useParticipantsMutation({
       } else if (mode === "update") {
         const response = await instance.patch(
           `/participants/${participant._id}`,
-          payload
+          payload,
         );
         return response.data.data;
       }
@@ -112,8 +112,7 @@ export function useParticipantsMutation({
         color: "success",
       });
     },
-    onError: (err) => {
-      console.log(err);
+    onError: () => {
       onReset?.();
       addToast({
         title: "Error!",
@@ -131,7 +130,7 @@ const fetchParticipant = async (participantId) => {
   } catch (error) {
     console.error("Error fetching participant:", error);
   } finally {
-    console.log("Participant fetch attempt finished.");
+    // console.log("Participant fetch attempt finished.");
   }
 };
 // const { data: participant } = useParticipant(participantId);
@@ -149,7 +148,7 @@ const fetchGroups = async (group_slug, label) => {
   } catch (error) {
     console.error(`Error fetching ${label}:`, error);
   } finally {
-    console.log(`${label} fetch attempt finished.`);
+    // console.log(`${label} fetch attempt finished.`);
   }
 };
 
@@ -167,7 +166,7 @@ export function useGroupMutation(
   modal_create,
   modal_detail,
   refetch,
-  data
+  data,
 ) {
   const queryClient = useQueryClient();
 
@@ -184,8 +183,7 @@ export function useGroupMutation(
       });
       modal_create();
     },
-    onError: (err) => {
-      console.log(err);
+    onError: () => {
       // setBack();
       addToast({
         title: "Error!",
@@ -199,7 +197,7 @@ export function useGroupMutation(
     mutationFn: async () => {
       const response = await instance.patch(
         `/${group_slug}/${group._id}`,
-        data
+        data,
       );
       return response.data.data;
     },
@@ -260,7 +258,7 @@ const fetchMinistries = async () => {
   } catch (error) {
     console.error("Error fetching Ministries:", error);
   } finally {
-    console.log("Ministries fetch attempt finished.");
+    // console.log("Ministries fetch attempt finished.");
   }
 };
 
@@ -279,7 +277,7 @@ const fetchPrayerGroups = async () => {
   } catch (error) {
     console.error("Error fetching PrayerGroups:", error);
   } finally {
-    console.log("PrayerGroups fetch attempt finished.");
+    // console.log("PrayerGroups fetch attempt finished.");
   }
 };
 // const { data: prayerGroups, isPending: isPendingPrayerGroups } = usePrayerGroups();
@@ -287,5 +285,30 @@ export function usePrayerGroups() {
   return useQuery({
     queryKey: ["prayer-groups"],
     queryFn: fetchPrayerGroups,
+  });
+}
+
+const fetchMarriages = async () => {
+  try {
+    const response = await instance.get(`/marriages`);
+    return response.data.data;
+  } catch (error) {
+    console.error("Error fetching marriages:", error);
+  } finally {
+    // console.log("marriages fetch attempt finished.");
+  }
+};
+
+export function useMarriages() {
+  const queryClient = useQueryClient();
+  return useQuery({
+    queryKey: ["marriages"],
+    queryFn: fetchMarriages,
+    select: (marriages) => {
+      marriages.forEach((m) =>
+        queryClient.setQueryData(["marriages", m.id], m),
+      );
+      return marriages;
+    },
   });
 }

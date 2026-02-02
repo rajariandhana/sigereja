@@ -3,7 +3,7 @@ import Logo from "./Logo";
 import { cn } from "../utils/cn";
 import { CiLogout } from "react-icons/ci";
 import { Link, useLocation } from "react-router";
-import { PiBank, PiGear, PiHandsPraying, PiUsers } from "react-icons/pi";
+import { PiBank, PiGear, PiHandsPraying, PiHouse, PiUsers } from "react-icons/pi";
 
 const sidebarItems = [
   {
@@ -13,16 +13,22 @@ const sidebarItems = [
     icon: <PiUsers size={24} />,
   },
   {
-    key: "wadah",
+    key: "ministries",
     label: "Wadah",
     href: "/wadah",
     icon: <PiBank size={24} />,
   },
   {
-    key: "prayer-group",
+    key: "prayer-groups",
     label: "Kelompok Doa",
     href: "/kelompok-doa",
     icon: <PiHandsPraying size={24} />,
+  },
+  {
+    key: "marriages",
+    label: "Marriages",
+    href: "/pernikahan",
+    icon: <PiHouse size={24} />,
   },
   // {
   //   key: "settings",

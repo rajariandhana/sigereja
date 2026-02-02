@@ -9,6 +9,7 @@ import ParticipantEdit from './components/Participants/ParticipantEdit'
 import Ministries from './components/Ministries/Ministries'
 import PrayerGroups from './components/PrayerGroups/PrayerGroups'
 import ParticipantCreate from './components/Participants/ParticipantCreate'
+import Marriages from './components/Marriages/Marriages'
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
         <Route path="/jemaat/:participantId" element={<ParticipantEdit />} />
         <Route path="/wadah" element={<Ministries />} />
         <Route path="/kelompok-doa" element={<PrayerGroups />} />
+        <Route path="/pernikahan" element={<Marriages />} />
         <Route path="/settings" element={<UnderMaintenance />} />
         <Route path="*" element={<UnderMaintenance />} />
       </Route>
