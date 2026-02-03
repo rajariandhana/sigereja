@@ -312,3 +312,74 @@ export function useMarriages() {
     },
   });
 }
+
+export function useMarriageForm(initialData) {
+  return useState({
+    husband: initialData?.husband?.participantId?._id ?? null,
+    wife: initialData?.wife?.participantId?._id ?? null,
+    marriage_date: initialData
+      ? parseDate(initialData.marriage_date)
+      : null,
+  });
+}
+
+function buildMarriagePayload(form) {
+  console.log("before", form);
+  const payload = {
+    husbandParticipantId: form.husband,
+    wifeParticipantId: form.wife,
+    marriage_date: formatToYMD(form.marriage_date),
+  };
+  console.log("after", payload);
+  return payload;
+}
+
+export function useMarriageMutation({ form, mode, marriage, onReset }) {
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
+  return useMutation({
+    mutationFn: async () => {
+      if (mode === "delete") {
+        const response = await instance.delete(`/marriages/${marriage._id}`);
+        return response.data.data;
+      }
+      const payload = buildMarriagePayload(form);
+      if (mode === "create") {
+        const response = await instance.post(`/marriages`, payload);
+        return response.data.data;
+      } else if (mode === "update") {
+        const response = await instance.patch(
+          `/marriages/${marriage._id}`,
+          payload,
+        );
+        return response.data.data;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["marriages"] });
+      if (mode === "update") {
+        queryClient.invalidateQueries({
+          queryKey: ["marriages", marriage._id],
+        });
+      } else if (mode === "create" || mode === "delete") {
+        navigate("/pernikahan");
+      }
+      addToast({
+        title: "Berhasil",
+        description:
+          mode === "delete"
+            ? `Pernikahan berhasil dihapus!`
+            : `Data berhasil disimpan!`,
+        color: "success",
+      });
+    },
+    onError: () => {
+      onReset?.();
+      addToast({
+        title: "Error!",
+        description: "Terjadi kesalahan saat menyimpan data pernikahan!",
+        color: "danger",
+      });
+    },
+  });
+}

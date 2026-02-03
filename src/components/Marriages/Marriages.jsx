@@ -11,11 +11,12 @@ import {
   TableRow,
   useDisclosure,
 } from "@heroui/react";
-import { useMarriages } from "../../hooks/hooks";
+import { useMarriages, useParticipants } from "../../hooks/hooks";
 import { AiOutlinePlus } from "react-icons/ai";
 import { IoMdInformationCircleOutline } from "react-icons/io";
-import { useState } from "react";
-import MarriageCreate from "./MarriageCreate";
+import { useEffect, useState } from "react";
+import MarriageForm from "./MarriageForm";
+import { MarriageCreate } from "./MarriageCreate";
 
 const columns = [
   {
@@ -62,9 +63,6 @@ export default function Marriages() {
     }
   };
 
-  const [marriage, setMarriage] = useState();
-  const [husband, setHusband] = useState("");
-  const [marriageDate, setMarriageDate] = useState("");
   const {
     isOpen: createIsOpen,
     onOpen: createOnOpen,
@@ -88,13 +86,8 @@ export default function Marriages() {
         isOpen={createIsOpen}
         onOpen={createOnOpen}
         onOpenChange={createOnOpenChange}
-        // handleCreate={}
-        husband={husband}
-        setHusband={setHusband}
-        marriageDate={marriageDate}
-        setMarriageDate={setMarriageDate}
       />
-      <Table isStriped isHeaderSticky>
+      <Table isStriped isHeaderSticky aria-label="Marriage List">
         <TableHeader columns={columns}>
           {(column) => (
             <TableColumn

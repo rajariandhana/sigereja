@@ -1,71 +1,138 @@
-import { Modal, useDisclosure } from "@heroui/react";
-import { formatDateTimeID } from "../../utils/util";
+import {
+  Autocomplete,
+  AutocompleteItem,
+  Button,
+  DatePicker,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  Spinner,
+} from "@heroui/react";
 import { change } from "../Commons";
+import { IoHammerOutline } from "react-icons/io5";
+import { useParticipants } from "../../hooks/hooks";
+import { useEffect, useState } from "react";
 
 export default function MarriageForm({
-  marriage,
-  isOpen, onOpen, onOpenChange,
-  husband,
-  setHusband,
-  marriageDate,
-  setMarriageDate,
-  handleUpdate,
-  handleDelete,
+  form,
+  setForm,
+  mode,
+  isOpen,
+  onOpen,
+  onOpenChange,
+  onSubmit,
+  isSubmitting,
+  onDelete,
   isDeleting,
-  label
+  marriage,
 }) {
-  const {
-    isOpen: confirmIsOpen,
-    onOpen: confirmOnOpen,
-    onOpenChange: confirmOnOpenChange,
-  } = useDisclosure();
+  const update = (key) => (value) => setForm((f) => ({ ...f, [key]: value }));
+  const { data: participants } = useParticipants();
+
+  const [men, setMen] = useState([]);
+  const [women, setWomen] = useState([]);
+
+  useEffect(() => {
+    if (!participants) return;
+
+    const men = [];
+    const women = [];
+
+    participants.forEach(({ _id, name, gender }) => {
+      const simplified = { _id, name };
+      if (gender === "pria") men.push(simplified);
+      if (gender === "wanita") women.push(simplified);
+    });
+
+    setMen(men);
+    setWomen(women);
+  }, [participants]);
+
+  if (!participants) {
+    return <Spinner />;
+  }
+
   return (
     <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
       <ModalContent>
         {(onClose) => (
           <>
-            <ModalHeader>Ubah Data</ModalHeader>
+            <ModalHeader>Tambah Pernikahan</ModalHeader>
             <ModalBody>
-              <Input
+              <span>Form: {JSON.stringify(form)}</span>
+              <Autocomplete
                 label="Suami"
-                value={husband}
-                onValueChange={setHusband}
+                defaultItems={men}
+                placeholder="Temukan nama suami"
                 variant="faded"
-                description={change(marriage.husband, husband)}
+                value={form.husband}
+                onSelectionChange={update("husband")}
+              >
+                {(item) => (
+                  <AutocompleteItem key={item._id}>
+                    {item.name}
+                  </AutocompleteItem>
+                )}
+              </Autocomplete>
+              <Autocomplete
+                label="Istri"
+                defaultItems={women}
+                placeholder="Temukan nama istri"
+                variant="faded"
+                value={form.wife}
+                onSelectionChange={update("wife")}
+              >
+                {(item) => (
+                  <AutocompleteItem key={item._id}>
+                    {item.name}
+                  </AutocompleteItem>
+                )}
+              </Autocomplete>
+              <DatePicker
+                label="Tanggal Peneguhan Pernikahan"
+                value={form.marriage_date}
+                onChange={update("marriage_date")}
+                showMonthAndYearPickers
+                selectorButtonPlacement="start"
+                variant="faded"
+                isRequired
+                description={
+                  marriage ? (
+                    change(marriage.marriage_date, form.marriage_date)
+                  ) : (
+                    <></>
+                  )
+                }
               />
-              {/* <span className="text-sm">
-                Terakhir diubah: {formatDateTimeID(marriage.updatedAt)}
-              </span> */}
             </ModalBody>
             <ModalFooter>
-              <div className="w-full flex items-center justify-between">
-                <Button color="danger" variant="ghost" onPress={confirmOnOpen}>
-                  <HiOutlineTrash size={20} />
-                  Hapus
+              <div className="w-full flex justify-end">
+                <Button
+                  color="primary"
+                  variant="ghost"
+                  onPress={onSubmit}
+                  isLoading={isSubmitting}
+                >
+                  Simpan Data
                 </Button>
-                <div className="gap-x-2">
+                {mode === "edit" && (
                   <Button
-                    color="warning"
+                    color="danger"
                     variant="ghost"
-                    onPress={handleUpdate}
+                    onPress={onDelete}
+                    isLoading={isDeleting}
                   >
-                    Simpan Perubahan
+                    <IoHammerOutline size={20} />
+                    Hapus Pernikahan
                   </Button>
-                </div>
+                )}
               </div>
             </ModalFooter>
           </>
         )}
       </ModalContent>
-      <ConfirmDelete
-        isOpen={confirmIsOpen}
-        onOpen={confirmOnOpen}
-        onOpenChange={confirmOnOpenChange}
-        handleDelete={handleDelete}
-        isDeleting={isDeleting}
-        label={label}
-        toDelete={name}
-      ></ConfirmDelete>
     </Modal>
-  )
+  );
 }

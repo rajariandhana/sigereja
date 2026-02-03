@@ -1,55 +1,21 @@
-import {
-  Button,
-  Input,
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-} from "@heroui/react";
-import { useEffect } from "react";
+import { useMarriageForm, useMarriageMutation } from "../../hooks/hooks";
+import MarriageForm from "./MarriageForm";
 
-export default function MarriageCreate({
-  isOpen,
-  onOpen,
-  onOpenChange,
-  handleCreate,
-  // isCreating,
-  husband,
-  setHusband,
-  marriageDate,
-  setMarriageDate,
-}) {
-  useEffect(() => {
-    if (isOpen === true) {
-      setHusband("");
-    }
-  }, [isOpen]);
-
+export function MarriageCreate({ isOpen, onOpen, onOpenChange}) {
+  const [form, setForm] = useMarriageForm();
+  const createMutation = useMarriageMutation({
+    form,
+    mode: "create",
+  });
   return (
-    <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
-      <ModalContent>
-        {(onClose) => (
-          <>
-            <ModalHeader>Tambah Pernikahan</ModalHeader>
-            <ModalBody>
-              <Input
-                label="Suami"
-                value={husband}
-                onValueChange={setHusband}
-                variant="faded"
-              />
-            </ModalBody>
-            <ModalFooter>
-              <div className="w-full flex justify-end">
-                <Button color="primary" variant="ghost" onPress={handleCreate}>
-                  Buat
-                </Button>
-              </div>
-            </ModalFooter>
-          </>
-        )}
-      </ModalContent>
-    </Modal>
+    <MarriageForm
+      form={form}
+      setForm={setForm}
+      mode="create"
+      isOpen={isOpen}
+      onOpen={onOpen}
+      onOpenChange={onOpenChange}
+      onSubmit={createMutation.mutate}
+    />
   );
 }
