@@ -11,9 +11,9 @@ import {
   Spinner,
 } from "@heroui/react";
 import { change } from "../Commons";
-import { IoHammerOutline } from "react-icons/io5";
 import { useParticipants } from "../../hooks/hooks";
 import { useEffect, useState } from "react";
+import { HiOutlineTrash } from "react-icons/hi";
 
 export default function MarriageForm({
   form,
@@ -59,16 +59,19 @@ export default function MarriageForm({
       <ModalContent>
         {(onClose) => (
           <>
-            <ModalHeader>Tambah Pernikahan</ModalHeader>
+            <ModalHeader>
+              {mode === "create" ? "Tambah Pernikahan" : "Ubah Data Pernikahan"}
+            </ModalHeader>
             <ModalBody>
-              <span>Form: {JSON.stringify(form)}</span>
+              {/* <span>Form: {JSON.stringify(form)}</span> */}
               <Autocomplete
                 label="Suami"
                 defaultItems={men}
                 placeholder="Temukan nama suami"
                 variant="faded"
-                value={form.husband}
+                selectedKey={form.husband}
                 onSelectionChange={update("husband")}
+                isRequired
               >
                 {(item) => (
                   <AutocompleteItem key={item._id}>
@@ -81,8 +84,9 @@ export default function MarriageForm({
                 defaultItems={women}
                 placeholder="Temukan nama istri"
                 variant="faded"
-                value={form.wife}
+                selectedKey={form.wife}
                 onSelectionChange={update("wife")}
+                isRequired
               >
                 {(item) => (
                   <AutocompleteItem key={item._id}>
@@ -108,7 +112,20 @@ export default function MarriageForm({
               />
             </ModalBody>
             <ModalFooter>
-              <div className="w-full flex justify-end">
+              <div
+                className={`w-full flex ${mode === "edit" ? "justify-between" : "justify-end"}`}
+              >
+                {mode === "edit" && (
+                  <Button
+                    color="danger"
+                    variant="ghost"
+                    onPress={onDelete}
+                    isLoading={isDeleting}
+                  >
+                    <HiOutlineTrash size={20} />
+                    Hapus Pernikahan
+                  </Button>
+                )}
                 <Button
                   color="primary"
                   variant="ghost"
@@ -117,17 +134,6 @@ export default function MarriageForm({
                 >
                   Simpan Data
                 </Button>
-                {mode === "edit" && (
-                  <Button
-                    color="danger"
-                    variant="ghost"
-                    onPress={onDelete}
-                    isLoading={isDeleting}
-                  >
-                    <IoHammerOutline size={20} />
-                    Hapus Pernikahan
-                  </Button>
-                )}
               </div>
             </ModalFooter>
           </>

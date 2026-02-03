@@ -17,17 +17,18 @@ import { IoMdInformationCircleOutline } from "react-icons/io";
 import { useEffect, useState } from "react";
 import MarriageForm from "./MarriageForm";
 import { MarriageCreate } from "./MarriageCreate";
+import { MarriageEdit } from "./MarriageEdit";
 
 const columns = [
   {
     key: "husband",
     label: "Suami",
-    width: 10,
+    width: 40,
   },
   {
     key: "wife",
     label: "Istri",
-    width: 10,
+    width: 40,
   },
   {
     key: "marriage_date",
@@ -36,13 +37,56 @@ const columns = [
   },
   {
     key: "view",
-    label: "Lihat",
+    label: "",
     width: 10,
   },
 ];
 
 export default function Marriages() {
   const { data: marriages, isPending } = useMarriages();
+  const { data: participants } = useParticipants();
+  const [marriage, setMarriage] = useState({
+    husband: null,
+    wife: null,
+    marriage_date: null,
+  });
+  const [names, setNames] = useState();
+  useEffect(() => {
+    if (
+      !marriage.husband ||
+      !marriage.wife ||
+      !marriage.marriage_date ||
+      !participants
+    )
+      return;
+    // console.log("mmm", marriage);
+    const h = participants.filter(
+      (p) => p._id === marriage.husband.participantId._id,
+    )[0];
+    const w = participants.filter(
+      (p) => p._id === marriage.wife.participantId._id,
+    )[0];
+    // console.log("hw",h,w);
+    setNames({
+      husband: h.name,
+      wife: w.name,
+    });
+  }, [marriage, participants]);
+  const {
+    isOpen: createIsOpen,
+    onOpen: createOnOpen,
+    onOpenChange: createOnOpenChange,
+  } = useDisclosure();
+
+  const {
+    isOpen: editIsOpen,
+    onOpen: editOnOpen,
+    onOpenChange: editOnOpenChange,
+  } = useDisclosure();
+  const handleDetail = (m) => {
+    setMarriage(m);
+    editOnOpen();
+  };
 
   const renderCell = (marriage, columnKey) => {
     switch (columnKey) {
@@ -54,20 +98,16 @@ export default function Marriages() {
         return marriage.marriage_date;
       case "view":
         return (
-          <Link href={`/jemaat/${marriage._id}`}>
-            <IoMdInformationCircleOutline />
-          </Link>
+          <IoMdInformationCircleOutline
+            onClick={() => handleDetail(marriage)}
+            size={20}
+            className="text-emerald-500 cursor-pointer"
+          />
         );
       default:
         return JSON.stringify(columnKey);
     }
   };
-
-  const {
-    isOpen: createIsOpen,
-    onOpen: createOnOpen,
-    onOpenChange: createOnOpenChange,
-  } = useDisclosure();
 
   return (
     <div className="w-full xl:w-3/4">
@@ -93,7 +133,7 @@ export default function Marriages() {
             <TableColumn
               key={column.key}
               align={
-                ["age", "gender", "view"].includes(column.key)
+                ["marriage_date", "view"].includes(column.key)
                   ? "center"
                   : "start"
               }
@@ -120,6 +160,13 @@ export default function Marriages() {
           )}
         </TableBody>
       </Table>
+      <MarriageEdit
+        isOpen={editIsOpen}
+        onOpen={editOnOpen}
+        onOpenChange={editOnOpenChange}
+        marriage={marriage}
+        names={names}
+      />
     </div>
   );
 }

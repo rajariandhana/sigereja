@@ -6,6 +6,7 @@ export function MarriageCreate({ isOpen, onOpen, onOpenChange}) {
   const createMutation = useMarriageMutation({
     form,
     mode: "create",
+    onReset: () => onOpenChange(false),
   });
   return (
     <MarriageForm

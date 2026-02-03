@@ -3,7 +3,7 @@ import instance from "../libs/axios/instance";
 import { addToast } from "@heroui/react";
 import { formatToYMD } from "../utils/util";
 import { useNavigate } from "react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { parseDate } from "@internationalized/date";
 
 const fetchParticipants = async () => {
@@ -313,30 +313,40 @@ export function useMarriages() {
   });
 }
 
-export function useMarriageForm(initialData) {
-  return useState({
-    husband: initialData?.husband?.participantId?._id ?? null,
-    wife: initialData?.wife?.participantId?._id ?? null,
-    marriage_date: initialData
-      ? parseDate(initialData.marriage_date)
-      : null,
+export function useMarriageForm(marriage, isOpen) {
+  const [form, setForm] = useState({
+    husband: null,
+    wife: null,
+    marriage_date: null,
   });
+
+  useEffect(() => {
+    if (isOpen && marriage) {
+      // console.log("m",marriage.husband.participantId._id)
+      setForm({
+        husband: marriage.husband.participantId._id,
+        wife: marriage.wife.participantId._id,
+        marriage_date: parseDate(marriage.marriage_date),
+      });
+    }
+  }, [isOpen, marriage]);
+
+  return [form, setForm];
 }
 
 function buildMarriagePayload(form) {
-  console.log("before", form);
+  // console.log("before", form);
   const payload = {
     husbandParticipantId: form.husband,
     wifeParticipantId: form.wife,
     marriage_date: formatToYMD(form.marriage_date),
   };
-  console.log("after", payload);
+  // console.log("after", payload);
   return payload;
 }
 
 export function useMarriageMutation({ form, mode, marriage, onReset }) {
   const queryClient = useQueryClient();
-  const navigate = useNavigate();
   return useMutation({
     mutationFn: async () => {
       if (mode === "delete") {
@@ -357,19 +367,18 @@ export function useMarriageMutation({ form, mode, marriage, onReset }) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["marriages"] });
-      if (mode === "update") {
+      if (mode === "update" || mode === "delete") {
         queryClient.invalidateQueries({
           queryKey: ["marriages", marriage._id],
         });
-      } else if (mode === "create" || mode === "delete") {
-        navigate("/pernikahan");
       }
+      onReset?.();
       addToast({
         title: "Berhasil",
         description:
           mode === "delete"
             ? `Pernikahan berhasil dihapus!`
-            : `Data berhasil disimpan!`,
+            : `Pernikahan berhasil disimpan!`,
         color: "success",
       });
     },
