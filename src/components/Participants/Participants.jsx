@@ -458,6 +458,7 @@ export default function Participants() {
             />
           </div>
         }
+        aria-label="Tabel Jemaat"
       >
         <TableHeader columns={columns}>
           {(column) => (

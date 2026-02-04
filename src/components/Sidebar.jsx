@@ -3,7 +3,7 @@ import Logo from "./Logo";
 import { cn } from "../utils/cn";
 import { CiLogout } from "react-icons/ci";
 import { Link, useLocation } from "react-router";
-import { PiBank, PiGear, PiHandsPraying, PiHouse, PiUsers } from "react-icons/pi";
+import { PiBank, PiGear, PiHandsPraying, PiHouse, PiStar, PiUsers } from "react-icons/pi";
 
 const sidebarItems = [
   {
@@ -29,6 +29,12 @@ const sidebarItems = [
     label: "Pernikahan",
     href: "/pernikahan",
     icon: <PiHouse size={24} />,
+  },
+  {
+    key: "baptized",
+    label: "Baptis",
+    href: "/baptis",
+    icon: <PiStar size={24} />,
   },
   // {
   //   key: "settings",

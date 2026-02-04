@@ -10,6 +10,7 @@ import Ministries from './components/Ministries/Ministries'
 import PrayerGroups from './components/PrayerGroups/PrayerGroups'
 import ParticipantCreate from './components/Participants/ParticipantCreate'
 import Marriages from './components/Marriages/Marriages'
+import Baptized from './components/Baptized/Baptized'
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
         <Route path="/wadah" element={<Ministries />} />
         <Route path="/kelompok-doa" element={<PrayerGroups />} />
         <Route path="/pernikahan" element={<Marriages />} />
+        <Route path="/baptis" element={<Baptized />} />
         <Route path="/settings" element={<UnderMaintenance />} />
         <Route path="*" element={<UnderMaintenance />} />
       </Route>
