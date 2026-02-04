@@ -44,6 +44,11 @@ export function useParticipantForm(initialData = {}) {
     gender: initialData.gender ?? undefined,
     notes: initialData.notes ?? "",
     baptized: initialData.baptized ? "yes" : "no",
+    parent_name: initialData.parent_name ?? "",
+    baptized_by: initialData.baptized_by ?? "",
+    baptized_date: initialData.baptized_date
+      ? parseDate(initialData.baptized_date)
+      : undefined,
     ministrySlugs: initialData.ministrySlugs ?? new Set([]),
     prayerGroupSlugs: initialData.prayerGroupSlugs ?? new Set([]),
   });
@@ -59,6 +64,9 @@ function buildParticipantPayload(form) {
     gender: form.gender,
     notes: form.notes,
     baptized: form.baptized === "yes",
+    parent_name: form.parent_name ?? "",
+    baptized_by: form.baptized_by ?? "",
+    baptized_date: form.baptized_date ? formatToYMD(form.baptized_date) : "",
     ministrySlugs: [...form.ministrySlugs],
     prayerGroupSlugs: [...form.prayerGroupSlugs],
   };

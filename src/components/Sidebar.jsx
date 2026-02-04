@@ -26,7 +26,7 @@ const sidebarItems = [
   },
   {
     key: "marriages",
-    label: "Marriages",
+    label: "Pernikahan",
     href: "/pernikahan",
     icon: <PiHouse size={24} />,
   },

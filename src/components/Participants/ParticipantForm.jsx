@@ -10,6 +10,7 @@ import { calculateAge, genders } from "../../utils/util";
 import { change, renderGender } from "../Commons";
 import GroupSelect from "../GroupSelect";
 import { IoHammerOutline } from "react-icons/io5";
+import { HiOutlineTrash } from "react-icons/hi";
 
 export default function ParticipantForm({
   form,
@@ -130,27 +131,78 @@ export default function ParticipantForm({
               participant ? change(participant.notes, form.notes) : <></>
             }
           />
-          <Select
-            label="Status Baptis"
-            selectionMode="single"
-            selectedKeys={[form.baptized]}
-            onChange={(e) => update("baptized")(e.target.value)}
-            variant="faded"
-            className="w-1/2"
-            description={
-              participant ? (
-                change(
-                  participant.baptized === true ? "yes" : "no",
-                  form.baptized
-                )
-              ) : (
-                <></>
-              )
-            }
-          >
-            <SelectItem key={"yes"}>Sudah</SelectItem>
-            <SelectItem key={"no"}>Belum</SelectItem>
-          </Select>
+          <div className="flex flex-col gap-2">
+            <div className="flex gap-4">
+              <Select
+                label="Status Baptis"
+                selectionMode="single"
+                selectedKeys={[form.baptized]}
+                onChange={(e) => update("baptized")(e.target.value)}
+                variant="faded"
+                description={
+                  participant ? (
+                    change(
+                      participant.baptized === true ? "yes" : "no",
+                      form.baptized,
+                    )
+                  ) : (
+                    <></>
+                  )
+                }
+                className={`${form.baptized === "yes" ? "w-full" : "w-1/2"}`}
+              >
+                <SelectItem key={"yes"}>Sudah</SelectItem>
+                <SelectItem key={"no"}>Belum</SelectItem>
+              </Select>
+              {form.baptized === "yes" && (
+                <DatePicker
+                  label="Tanggal Baptis"
+                  value={form.baptized_date}
+                  onChange={update("baptized_date")}
+                  showMonthAndYearPickers
+                  selectorButtonPlacement="start"
+                  variant="faded"
+                  description={
+                    participant ? (
+                      change(participant.baptized_date, form.baptized_date)
+                    ) : (
+                      <></>
+                    )
+                  }
+                />
+              )}
+            </div>
+            {form.baptized === "yes" && (
+              <div className="flex flex-col gap-2">
+                <Input
+                  label="Nama Orang Tua"
+                  value={form.parent_name}
+                  onValueChange={update("parent_name")}
+                  variant="faded"
+                  description={
+                    participant ? (
+                      change(participant.parent_name, form.parent_name)
+                    ) : (
+                      <></>
+                    )
+                  }
+                />
+                <Input
+                  label="Dibaptis Oleh"
+                  value={form.baptized_by}
+                  onValueChange={update("baptized_by")}
+                  variant="faded"
+                  description={
+                    participant ? (
+                      change(participant.baptized_by, form.baptized_by)
+                    ) : (
+                      <></>
+                    )
+                  }
+                />
+              </div>
+            )}
+          </div>
         </div>
       </div>
       <div className="flex gap-4 w-full">
@@ -186,7 +238,7 @@ export default function ParticipantForm({
             onPress={onDelete}
             isLoading={isDeleting}
           >
-            <IoHammerOutline size={20} />
+            <HiOutlineTrash size={20} />
             Hapus Data Jemaat
           </Button>
         )}

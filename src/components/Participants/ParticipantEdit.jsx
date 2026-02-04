@@ -43,14 +43,14 @@ export default function ParticipantDetail() {
     if (!participant || !ministries || !prayerGroups) return;
     // console.log(participant.ministries);
     const ministryIds = new Set(
-      participant.ministries.map((m) => m.ministryId)
+      participant.ministries.map((m) => m.ministryId),
     );
     const ministrySlugs = ministries
       .filter((m) => ministryIds.has(m._id))
       .map((m) => m.slug);
     // console.log(ministrySlugs);
     const prayerGroupIds = new Set(
-      participant.prayerGroups.map((m) => m.prayerGroupId)
+      participant.prayerGroups.map((m) => m.prayerGroupId),
     );
     const prayerGroupSlugs = prayerGroups
       .filter((p) => prayerGroupIds.has(p._id))
@@ -68,6 +68,12 @@ export default function ParticipantDetail() {
       gender: participant.gender ?? undefined,
       notes: participant.notes ?? "",
       baptized: participant.baptized ? "yes" : "no",
+      parent_name: participant.parent_name ?? "",
+      baptized_by: participant.baptized_by ?? "",
+      baptized_date:
+        participant.baptized_date !== ""
+          ? parseDate(participant.baptized_date)
+          : undefined,
       ministrySlugs: ministrySlugs ?? new Set([]),
       prayerGroupSlugs: prayerGroupSlugs ?? new Set([]),
     });
