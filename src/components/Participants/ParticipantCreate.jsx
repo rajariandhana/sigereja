@@ -6,7 +6,6 @@ import {
   usePrayerGroups,
 } from "../../hooks/hooks";
 import ParticipantForm from "./ParticipantForm";
-import { useEffect } from "react";
 import { MdKeyboardDoubleArrowLeft } from "react-icons/md";
 
 export default function ParticipantCreate() {
@@ -14,17 +13,10 @@ export default function ParticipantCreate() {
   const { data: prayerGroups } = usePrayerGroups();
 
   const [form, setForm] = useParticipantForm();
-  //   {
-  //   ministrySlugs: new Set(["pemuda-remaja"])
-  // }
   const createMutation = useParticipantsMutation({
     form,
     mode: "create",
   });
-
-  useEffect(() => {
-    console.log(form.ministrySlugs, form.prayerGroupSlugs);
-  }, [form]);
 
   if (!ministries || !prayerGroups) return <Spinner />;
 

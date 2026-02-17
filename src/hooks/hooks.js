@@ -5,6 +5,9 @@ import { formatToYMD } from "../utils/util";
 import { useNavigate } from "react-router";
 import { useEffect, useState } from "react";
 import { parseDate } from "@internationalized/date";
+import supabase, {
+  BUCKET_PARTICIPANT_PROFILE,
+} from "../libs/supabase/supabase";
 
 const fetchParticipants = async () => {
   try {
@@ -51,6 +54,8 @@ export function useParticipantForm(initialData = {}) {
       : undefined,
     ministrySlugs: initialData.ministrySlugs ?? new Set([]),
     prayerGroupSlugs: initialData.prayerGroupSlugs ?? new Set([]),
+    profile_photo_file: null,
+    profile_photo_url: initialData.profile_photo_url ?? "",
   });
 }
 
@@ -82,6 +87,12 @@ export function useParticipantsMutation({
 }) {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const setProfilePhoto = async (participantId, file) => {
+    const { error } = await supabase.storage
+      .from(BUCKET_PARTICIPANT_PROFILE)
+      .upload(participantId, file, { upsert: true });
+    if (error) throw error;
+  };
   return useMutation({
     mutationFn: async () => {
       if (mode === "delete") {
@@ -93,15 +104,22 @@ export function useParticipantsMutation({
       const payload = buildParticipantPayload(form);
       if (mode === "create") {
         const response = await instance.post(`/participants`, payload);
+        if (form.profile_photo_file) {
+          await setProfilePhoto(response.data.data._id, form.profile_photo_file);
+        }
         return response.data.data;
       } else if (mode === "update") {
         const response = await instance.patch(
           `/participants/${participant._id}`,
           payload,
         );
+        if (form.profile_photo_file) {
+          await setProfilePhoto(participant._id, form.profile_photo_file);
+        }
         return response.data.data;
       }
     },
+
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["participants"] });
       if (mode === "update") {
@@ -120,7 +138,8 @@ export function useParticipantsMutation({
         color: "success",
       });
     },
-    onError: () => {
+    onError: (error) => {
+      console.error(error);
       onReset?.();
       addToast({
         title: "Error!",

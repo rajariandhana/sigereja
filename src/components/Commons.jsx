@@ -10,7 +10,9 @@ export function renderGender(gender) {
 }
 
 export const renderColorChip = (mapping, identifier) => {
-  const { name, color } = mapping.find((m) => m.slug === identifier || m._id === identifier);
+  const { name, color } = mapping.find(
+    (m) => m.slug === identifier || m._id === identifier,
+  );
   return (
     <span
       className={`bg-${color}-100 text-${color}-500 text-xs xl:text-sm rounded-full px-2 py-1`}
@@ -25,18 +27,17 @@ export const renderColorChips = (ls, mapping, type) => {
       {ls.map((l) => {
         return renderColorChip(
           mapping,
-          type === "ministries" ? l.ministryId._id : l.prayerGroupId._id
-        )
-      }
-      )}
+          type === "ministries" ? l.ministryId._id : l.prayerGroupId._id,
+        );
+      })}
     </span>
   );
 };
 
 export const change = (a, b) => {
   if (!a || !b) return <></>;
-  if (a!=b) {
+  if (a != b) {
     // console.log(a,b);
-    return <span className="text-warning">Terdeteksi perubahan!</span>
+    return <span className="text-warning">Terdeteksi perubahan!</span>;
   }
-}
+};

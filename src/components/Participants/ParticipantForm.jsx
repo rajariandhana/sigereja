@@ -1,6 +1,7 @@
 import {
   Button,
   DatePicker,
+  Image,
   Input,
   Select,
   SelectItem,
@@ -29,6 +30,14 @@ export default function ParticipantForm({
   return (
     <>
       <div className="flex flex-col w-full mb-12 gap-4">
+        {form.profile_photo_url ? (
+          <Image
+            src={form.profile_photo_url}
+            className="object-cover w-40 h-40"
+          />
+        ) : (
+          <></>
+        )}
         <div className="grid grid-cols-2 gap-4 mb-8">
           <Input
             label="Nama"
@@ -122,15 +131,30 @@ export default function ParticipantForm({
           </div>
         </div>
         <div className="grid grid-cols-2 gap-4">
-          <Textarea
-            label="Catatan Tambahan"
-            value={form.notes}
-            onValueChange={update("notes")}
-            variant="faded"
-            description={
-              participant ? change(participant.notes, form.notes) : <></>
-            }
-          />
+          <div className="flex flex-col gap-2">
+            <Textarea
+              label="Catatan Tambahan"
+              value={form.notes}
+              onValueChange={update("notes")}
+              variant="faded"
+              description={
+                participant ? change(participant.notes, form.notes) : <></>
+              }
+            />
+            <Input
+              label="Foto Jemaat"
+              type="file"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  update("profile_photo_file")(file);
+                  console.log("profile_photo_file", file);
+                }
+              }}
+              variant="faded"
+              description={change(form.profile_photo_file, "null")}
+            />
+          </div>
           <div className="flex flex-col gap-2">
             <div className="flex gap-4">
               <Select
